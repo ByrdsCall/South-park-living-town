@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SPTown.NoActionBar" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/charcoal</item>
+        <item name="android:colorPrimary">@color/sp_red</item>
+        <item name="android:colorPrimaryDark">#7a1f14</item>
+        <item name="android:colorAccent">@color/sp_yellow</item>
+        <item name="android:textColorPrimary">#f0e8d0</item>
+        <item name="android:statusBarColor">#101010</item>
+    </style>
+</resources>

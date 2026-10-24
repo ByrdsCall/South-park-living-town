@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="charcoal">#1e1e1e</color>
+    <color name="sp_red">#d43d2a</color>
+    <color name="sp_yellow">#f2c230</color>
+    <color name="parchment">#f0e8d0</color>
+    <color name="cartman_red">#d43d2a</color>
+    <color name="stan_blue">#2a6fd4</color>
+    <color name="kyle_green">#2a9a4a</color>
+    <color name="kenny_orange">#e07b2a</color>
+    <color name="butters_teal">#3aa8a8</color>
+    <color name="player_gold">#f2c230</color>
+</resources>
