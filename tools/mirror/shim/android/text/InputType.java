@@ -1,0 +1,42 @@
+package android.text;
+// Desktop-mirror shim (internal QA tooling only).
+public class InputType {
+    public static final int TYPE_MASK_CLASS = 0x0000000f;
+    public static final int TYPE_MASK_VARIATION = 0x00000ff0;
+    public static final int TYPE_MASK_FLAGS = 0x00fff000;
+    public static final int TYPE_NULL = 0;
+    public static final int TYPE_CLASS_TEXT = 1;
+    public static final int TYPE_CLASS_NUMBER = 2;
+    public static final int TYPE_CLASS_PHONE = 3;
+    public static final int TYPE_CLASS_DATETIME = 4;
+    public static final int TYPE_TEXT_VARIATION_NORMAL = 0x00;
+    public static final int TYPE_TEXT_VARIATION_URI = 0x10;
+    public static final int TYPE_TEXT_VARIATION_EMAIL_ADDRESS = 0x20;
+    public static final int TYPE_TEXT_VARIATION_EMAIL_SUBJECT = 0x30;
+    public static final int TYPE_TEXT_VARIATION_SHORT_MESSAGE = 0x40;
+    public static final int TYPE_TEXT_VARIATION_LONG_MESSAGE = 0x50;
+    public static final int TYPE_TEXT_VARIATION_PERSON_NAME = 0x60;
+    public static final int TYPE_TEXT_VARIATION_POSTAL_ADDRESS = 0x70;
+    public static final int TYPE_TEXT_VARIATION_PASSWORD = 0x80;
+    public static final int TYPE_TEXT_VARIATION_VISIBLE_PASSWORD = 0x90;
+    public static final int TYPE_TEXT_VARIATION_WEB_EDIT_TEXT = 0xa0;
+    public static final int TYPE_TEXT_VARIATION_FILTER = 0xb0;
+    public static final int TYPE_TEXT_VARIATION_PHONETIC = 0xc0;
+    public static final int TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS = 0xd0;
+    public static final int TYPE_TEXT_VARIATION_WEB_PASSWORD = 0xe0;
+    public static final int TYPE_NUMBER_VARIATION_NORMAL = 0x00;
+    public static final int TYPE_NUMBER_VARIATION_PASSWORD = 0x10;
+    public static final int TYPE_DATETIME_VARIATION_NORMAL = 0x00;
+    public static final int TYPE_DATETIME_VARIATION_DATE = 0x10;
+    public static final int TYPE_DATETIME_VARIATION_TIME = 0x20;
+    public static final int TYPE_TEXT_FLAG_CAP_CHARACTERS = 0x1000;
+    public static final int TYPE_TEXT_FLAG_CAP_WORDS = 0x2000;
+    public static final int TYPE_TEXT_FLAG_CAP_SENTENCES = 0x4000;
+    public static final int TYPE_TEXT_FLAG_AUTO_CORRECT = 0x8000;
+    public static final int TYPE_TEXT_FLAG_AUTO_COMPLETE = 0x10000;
+    public static final int TYPE_TEXT_FLAG_MULTI_LINE = 0x20000;
+    public static final int TYPE_TEXT_FLAG_IME_MULTI_LINE = 0x40000;
+    public static final int TYPE_TEXT_FLAG_NO_SUGGESTIONS = 0x80000;
+    public static final int TYPE_NUMBER_FLAG_SIGNED = 0x1000;
+    public static final int TYPE_NUMBER_FLAG_DECIMAL = 0x2000;
+}
