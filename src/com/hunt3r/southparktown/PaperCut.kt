@@ -9,7 +9,7 @@ import kotlin.math.sqrt
 // ============================================================
 // PaperCut — v0.16.0d: the Stick-of-Truth pipeline's geometry
 // core, re-derived for our 2D canvas engine (spec stages 3, 4,
-// 5 and 8; see sot-pipeline-spec.md and the README ledger).
+// 5 and 8; see sot-pipeline-spec.md and the docs/TUNING.md ledger).
 //
 // Everything here is PURE (no android types): the JVM suite
 // pins determinism, variance and spacing directly against
@@ -309,7 +309,7 @@ object PaperCut {
      *  saturation stays); the background band sits slightly
      *  back, the foreground band a breath back. On a 2D
      *  canvas this ships as a low-alpha grey wash per band —
-     *  the desaturation substitute the README ledger records
+     *  the desaturation substitute the docs/TUNING.md ledger records
      *  in place of a real DOF blur. */
     const val BG_WASH_ALPHA = 24
     const val FG_WASH_ALPHA = 10

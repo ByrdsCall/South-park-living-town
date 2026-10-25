@@ -633,6 +633,88 @@ object PaperWalk {
         return s.copy(x = nx, band = nb, facing = facing,
             phase = s.phase + move * phasePerFrac) to null
     }
+
+    /** v0.17.0b: [step] with FEET CONTACT. The town's
+     *  one collision law, learned from Lucky's
+     *  playtest ("collision with characters causes
+     *  them to move but it's hitbox is bad"): a cast
+     *  member is NEVER displaced by the player — not
+     *  by the walk, not by the draw. [blockers] are the
+     *  scene's composed feet footprints (FigureCompose
+     *  .Feet, screen px) and they are READ-ONLY here:
+     *  the only position this function may move is the
+     *  player's own. When the step would carry the
+     *  player into a figure's feet ellipse
+     *  (FigureCompose.feetTouch), the player stops ON
+     *  the ellipse's edge: if the figure is the walk's
+     *  own pending target, that IS the arrival (you
+     *  walked up to them — the interaction fires); if
+     *  the step still makes band progress the player
+     *  slides along the edge as his depth pulls him
+     *  clear; if it makes no progress at all, the walk
+     *  ends, pressed to a stop. A step that STARTS
+     *  inside an ellipse (the crowd composed around a
+     *  standing player) is never clamped — he may
+     *  always walk out of a spawn overlap. */
+    fun stepClamped(s: State, dtSec: Float,
+                    phasePerFrac: Float = 22f,
+                    blockers: List<FigureCompose.Feet>,
+                    worldW: Float, h: Float,
+                    inside: Boolean, fhBase: Float):
+        Pair<State, Pending?> {
+        val (ns, fired) = step(s, dtSec, phasePerFrac)
+        if (blockers.isEmpty() || worldW <= 0f || h <= 0f)
+            return ns to fired
+        val pFeetY = WalkBand.feetY(ns.band, h, inside)
+        val pFh = fhBase * WalkBand.depthScale(ns.band)
+        val px = ns.x * worldW
+        val sFeetY = WalkBand.feetY(s.band, h, inside)
+        val sFh = fhBase * WalkBand.depthScale(s.band)
+        val sPx = s.x * worldW
+        for (b in blockers) {
+            if (!FigureCompose.feetTouch(px, pFeetY, pFh, b))
+                continue
+            // already DEEP inside this one before the step:
+            // a spawn overlap, not a collision — walk out.
+            // (Deep = dist2 < 0.90: a step that merely rests
+            // ON the edge, dist2 ≈ 1, must still clamp, or
+            // the resting player walks through next step —
+            // the float-exact edge is not "inside".)
+            if (FigureCompose.feetDist2(sPx, sFeetY, sFh, b)
+                < 0.90f)
+                continue
+            val edge = FigureCompose.feetEdgeX(px, pFeetY,
+                pFh, b) / worldW
+            if (fired != null) {
+                // arrived this step (the target snapped
+                // into the ellipse): stand at the edge,
+                // the interaction still fires
+                return ns.copy(x = edge) to fired
+            }
+            if (s.pending != null && s.pending.id == b.name) {
+                // the figure we came for IS the contact:
+                // standing at their feet is the arrival
+                return s.copy(x = edge, band = ns.band,
+                    facing = ns.facing, phase = ns.phase,
+                    walking = false, pending = null) to s.pending
+            }
+            val noProgress =
+                kotlin.math.abs(edge - s.x) < 0.0005f &&
+                    kotlin.math.abs(ns.band - s.band) < 0.0005f
+            return if (noProgress) {
+                // pressed to a full stop against a figure
+                // who isn't the target: the walk is over
+                s.copy(x = edge, walking = false,
+                    pending = null) to null
+            } else {
+                // stopped at the edge for now; the walk
+                // (and its order) survives — band progress
+                // slides the player along and clear
+                ns.copy(x = edge) to null
+            }
+        }
+        return ns to fired
+    }
 }
 
 // ---------------- tap resolution ----------------

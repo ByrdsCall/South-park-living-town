@@ -1,10 +1,10 @@
 package com.hunt3r.southparktown
 
-import android.content.Context
-
 // ============================================================
-// Prefs — SharedPreferences "sptown". Hand-rolled tiny JSON
-// (no Gson). Keys are stable — do not rename.
+// Prefs — the save codec over SaveStore (the Android store is
+// the "sptown" preferences file; see AndroidSaveStore).
+// Hand-rolled tiny JSON (no Gson). Keys are stable — do not
+// rename.
 // ============================================================
 
 /** Minimal JSON writer/parser: maps, lists, strings, numbers, booleans, null. */
@@ -154,22 +154,37 @@ object Json {
 }
 
 @Suppress("UNCHECKED_CAST")
-class Prefs(context: Context) {
-    private val sp = context.getSharedPreferences("sptown", Context.MODE_PRIVATE)
+class Prefs(private val store: SaveStore) {
+
+    // ---- typed views over the string store (v0.18.0a: the
+    // codec split — Prefs used to talk to the platform store
+    // directly; every value now rides SaveStore as a string,
+    // booleans as "true"/"false", ints as decimal, exactly the
+    // shapes AndroidSaveStore stringifies back on read, so a
+    // v0.17.0b save loads identically) ----
+    private fun getString(key: String): String? = store.read(key)
+    private fun getString(key: String, def: String): String = store.read(key) ?: def
+    private fun getBoolean(key: String, def: Boolean): Boolean =
+        store.read(key)?.toBoolean() ?: def
+    private fun getInt(key: String, def: Int): Int =
+        store.read(key)?.toIntOrNull() ?: def
+    private fun putString(key: String, value: String) = store.write(key, value)
+    private fun putBoolean(key: String, value: Boolean) =
+        store.write(key, if (value) "true" else "false")
+    private fun putInt(key: String, value: Int) = store.write(key, value.toString())
+    private fun removeKey(key: String) = store.delete(key)
 
     // ---- stable keys ----
-    fun getPlayerName(): String? = sp.getString("player_name", null)
+    fun getPlayerName(): String? = getString("player_name")
     fun hasPlayer(): Boolean = getPlayerName() != null
 
     fun savePlayer(name: String, appearance: Map<String, String>) {
-        sp.edit()
-            .putString("player_name", name)
-            .putString("player_appearance", Json.stringify(appearance))
-            .apply()
+        putString("player_name", name)
+        putString("player_appearance", Json.stringify(appearance))
     }
 
     fun getAppearance(): Map<String, String> {
-        val raw = sp.getString("player_appearance", null) ?: return DEFAULT_APPEARANCE
+        val raw = getString("player_appearance") ?: return DEFAULT_APPEARANCE
         return try {
             val m = Json.parse(raw) as? Map<String, Any?> ?: return DEFAULT_APPEARANCE
             validateAppearance(m.mapValues { it.value.toString() })
@@ -180,48 +195,46 @@ class Prefs(context: Context) {
 
     // ---- creator preset slots (v0.1.9d, additive key) ----
     fun getCreatorPresets(): List<Map<String, String>?> =
-        decodePresets(sp.getString("creator_presets", null))
+        decodePresets(getString("creator_presets"))
 
     fun saveCreatorPreset(slot: Int, appearance: Map<String, String>) {
         if (slot !in 0 until CREATOR_PRESET_SLOTS) return
         val cur = getCreatorPresets().toMutableList()
         cur[slot] = validateAppearance(appearance)
-        sp.edit().putString("creator_presets", encodePresets(cur)).apply()
+        putString("creator_presets", encodePresets(cur))
     }
 
     // Never logged. Ever.
-    fun getGeminiKey(): String = sp.getString("gemini_key", "") ?: ""
+    fun getGeminiKey(): String = getString("gemini_key", "")
     fun setGeminiKey(k: String) {
-        sp.edit().putString("gemini_key", k.trim()).apply()
+        putString("gemini_key", k.trim())
     }
 
     // ---- LLM provider selection + per-provider models (stable keys — do not rename) ----
-    fun getLlmProvider(): String = sp.getString("llm_provider", "gemini") ?: "gemini"
+    fun getLlmProvider(): String = getString("llm_provider", "gemini")
     fun setLlmProvider(p: String) {
         val v = if (p == "openrouter") "openrouter" else "gemini"
-        sp.edit().putString("llm_provider", v).apply()
+        putString("llm_provider", v)
     }
 
     fun getGeminiModel(): String =
-        sp.getString("gemini_model", LlmClient.DEFAULT_GEMINI_MODEL)
-            ?: LlmClient.DEFAULT_GEMINI_MODEL
+        getString("gemini_model", LlmClient.DEFAULT_GEMINI_MODEL)
     fun setGeminiModel(m: String) {
         val v = m.trim().ifBlank { LlmClient.DEFAULT_GEMINI_MODEL }
-        sp.edit().putString("gemini_model", v).apply()
+        putString("gemini_model", v)
     }
 
     // Never logged. Ever.
-    fun getOpenRouterKey(): String = sp.getString("openrouter_key", "") ?: ""
+    fun getOpenRouterKey(): String = getString("openrouter_key", "")
     fun setOpenRouterKey(k: String) {
-        sp.edit().putString("openrouter_key", k.trim()).apply()
+        putString("openrouter_key", k.trim())
     }
 
     fun getOpenRouterModel(): String =
-        sp.getString("openrouter_model", LlmClient.DEFAULT_OPENROUTER_MODEL)
-            ?: LlmClient.DEFAULT_OPENROUTER_MODEL
+        getString("openrouter_model", LlmClient.DEFAULT_OPENROUTER_MODEL)
     fun setOpenRouterModel(m: String) {
         val v = m.trim().ifBlank { LlmClient.DEFAULT_OPENROUTER_MODEL }
-        sp.edit().putString("openrouter_model", v).apply()
+        putString("openrouter_model", v)
     }
 
     /** Active LLM config, or null when the selected provider has no key (mock brain stays). */
@@ -238,48 +251,46 @@ class Prefs(context: Context) {
         }
     }
 
-    fun getLastPlayedDate(): String = sp.getString("last_played_date", "") ?: ""
+    fun getLastPlayedDate(): String = getString("last_played_date", "")
 
     /** Real-time clock sync. Default OFF = in-game clock (15-min ticks from 8 AM). */
-    fun isRealtimeSync(): Boolean = sp.getBoolean("realtime_sync", false)
+    fun isRealtimeSync(): Boolean = getBoolean("realtime_sync", false)
     fun setRealtimeSync(on: Boolean) {
-        sp.edit().putBoolean("realtime_sync", on).apply()
+        putBoolean("realtime_sync", on)
     }
 
     // ---- v0.2.0b audio (additive keys — absent in old saves,
     // defaults = ON at modest volume; the sounds themselves are
     // synthesized at runtime, nothing ships in the APK) ----
     fun audioSettings(): AudioSettings = AudioSettings(
-        music = sp.getInt("audio_music", AudioSettings.DEFAULT.music),
-        sfx = sp.getInt("audio_sfx", AudioSettings.DEFAULT.sfx),
-        ambience = sp.getInt("audio_amb", AudioSettings.DEFAULT.ambience),
-        muted = sp.getBoolean("audio_muted", false)
+        music = getInt("audio_music", AudioSettings.DEFAULT.music),
+        sfx = getInt("audio_sfx", AudioSettings.DEFAULT.sfx),
+        ambience = getInt("audio_amb", AudioSettings.DEFAULT.ambience),
+        muted = getBoolean("audio_muted", false)
     )
 
     fun setAudioSettings(s: AudioSettings) {
-        sp.edit()
-            .putInt("audio_music", s.music.coerceIn(0, 100))
-            .putInt("audio_sfx", s.sfx.coerceIn(0, 100))
-            .putInt("audio_amb", s.ambience.coerceIn(0, 100))
-            .putBoolean("audio_muted", s.muted)
-            .apply()
+        putInt("audio_music", s.music.coerceIn(0, 100))
+        putInt("audio_sfx", s.sfx.coerceIn(0, 100))
+        putInt("audio_amb", s.ambience.coerceIn(0, 100))
+        putBoolean("audio_muted", s.muted)
     }
 
     // ---- v0.4.0e greeting barks (additive key — absent in
     // old saves, defaults ON: townsfolk hail you by voice
     // when you walk into their space) ----
-    fun barksEnabled(): Boolean = sp.getBoolean("audio_barks", true)
+    fun barksEnabled(): Boolean = getBoolean("audio_barks", true)
     fun setBarksEnabled(on: Boolean) {
-        sp.edit().putBoolean("audio_barks", on).apply()
+        putBoolean("audio_barks", on)
     }
 
     // ---- v0.16.0d diorama post pass (additive key — absent in
     // old saves, defaults ON: the seeded line "boil" of the
     // paper pipeline, a ±1px breathing of the scene's painted
     // backdrop on a 3-frame cycle; faces and UI never boil) ----
-    fun boilEnabled(): Boolean = sp.getBoolean("post_boil", true)
+    fun boilEnabled(): Boolean = getBoolean("post_boil", true)
     fun setBoilEnabled(on: Boolean) {
-        sp.edit().putBoolean("post_boil", on).apply()
+        putBoolean("post_boil", on)
     }
 
     fun saveGame(state: GameState) {
@@ -294,13 +305,11 @@ class Prefs(context: Context) {
         // wipeAll reset it so a later save always lands.
         if (gameJson == lastGameJson) return
         lastGameJson = gameJson
-        sp.edit()
-            .putString("game_state", gameJson)
-            .putString("friendship", Json.stringify(state.friendship))
-            .putString("collected", Json.stringify(state.collected.toList()))
-            .putString("last_played_date", state.lastPlayedDate)
-            .putString("spawn_date", state.spawnDate)
-            .apply()
+        putString("game_state", gameJson)
+        putString("friendship", Json.stringify(state.friendship))
+        putString("collected", Json.stringify(state.collected.toList()))
+        putString("last_played_date", state.lastPlayedDate)
+        putString("spawn_date", state.spawnDate)
     }
 
     // ---- v0.1.5 per-NPC character memory: its OWN key, zero risk to game_state ----
@@ -309,7 +318,7 @@ class Prefs(context: Context) {
             val json = Json.stringify(NpcMemoryStore.serialize())
             if (json == lastMemoryJson) return // v0.1.9f: unchanged, skip the write
             lastMemoryJson = json
-            sp.edit().putString("npc_memory", json).apply()
+            putString("npc_memory", json)
         } catch (e: Exception) {
             // memory is flavor; never break saving
         }
@@ -318,7 +327,7 @@ class Prefs(context: Context) {
     fun loadNpcMemory() {
         if (NpcMemoryStore.isLoaded) return
         try {
-            val raw = sp.getString("npc_memory", null)
+            val raw = getString("npc_memory")
             if (raw == null) {
                 NpcMemoryStore.markLoaded()
                 return
@@ -333,7 +342,7 @@ class Prefs(context: Context) {
     }
 
     fun loadGame(): GameState? {
-        val raw = sp.getString("game_state", null) ?: return null
+        val raw = getString("game_state") ?: return null
         val doc = try {
             Json.parse(raw) as? Map<String, Any?>
         } catch (e: Exception) {
@@ -351,29 +360,29 @@ class Prefs(context: Context) {
         // save overwrites the surviving standalone keys — instead
         // salvage friendship / collection / dates from them.
         return recoverGameState(
-            sp.getString("friendship", null),
-            sp.getString("collected", null),
-            sp.getString("last_played_date", "") ?: "",
-            sp.getString("spawn_date", "") ?: "")
+            getString("friendship"),
+            getString("collected"),
+            getString("last_played_date", ""),
+            getString("spawn_date", ""))
     }
 
     fun clearGame() {
         lastGameJson = null
         lastMemoryJson = null
-        sp.edit().remove("game_state").apply()
+        removeKey("game_state")
     }
 
     fun wipeAll() {
         lastGameJson = null
         lastMemoryJson = null
-        sp.edit().clear().apply()
+        store.clear()
     }
 
     /** The format generation of the save on disk (for the Settings
      *  line): 0 = no save yet, -1 = a save exists but its doc is
      *  unreadable (it will be salvaged on load, not wiped). */
     fun storedSaveFormat(): Int {
-        val raw = sp.getString("game_state", null) ?: return 0
+        val raw = getString("game_state") ?: return 0
         val doc = try {
             Json.parse(raw) as? Map<String, Any?>
         } catch (e: Exception) {

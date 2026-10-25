@@ -35,7 +35,7 @@ class PhoneActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ensureLoreLoaded(this)
-        prefs = Prefs(this)
+        prefs = Prefs(AndroidSaveStore(this))
         prefs.loadNpcMemory()
         state = prefs.loadGame()
 

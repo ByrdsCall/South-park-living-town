@@ -30,7 +30,7 @@ class FictionActivity : Activity() {
     }
 
     private fun render() {
-        val prefs = Prefs(this)
+        val prefs = Prefs(AndroidSaveStore(this))
         val state = prefs.loadGame() ?: GameState()
         val def = Fiction.activeDef(state)
         val phase = Fiction.phaseOf(state)

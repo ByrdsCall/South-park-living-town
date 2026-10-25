@@ -22,7 +22,7 @@ package com.hunt3r.southparktown
 //   birthdays a month, four days shared — real towns share
 //   birthdays, and every system below handles a shared day
 //   instead of pretending otherwise). An authored date is
-//   NEVER canon; the split lives in code and README so no
+//   NEVER canon; the split lives in code and docs/TUNING.md so no
 //   future build mistakes one for the other.
 //
 //   THE PAPER — the week's edition lists the week's

@@ -17,7 +17,7 @@ package com.hunt3r.southparktown
  * into lifeText["paperLatest"], and announced on the ticker;
  * past editions reduce to their headline lines, capped.
  *
- * HEADLINE precedence — stated once, here, in the README and
+ * HEADLINE precedence — stated once, here, in docs/TUNING.md and
  * in the suite (highest tier present wins; ties within a
  * tier go to the earliest recorded day):
  *   1. CASE CLOSED — a case retired during the week, public

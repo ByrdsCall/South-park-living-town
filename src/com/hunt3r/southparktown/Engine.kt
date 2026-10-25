@@ -1172,6 +1172,12 @@ class Engine(seed: Long = System.currentTimeMillis()) {
 
     /** Add a piece of ground litter (bounded; oldest cleaned up past the cap). */
     fun dropLitter(state: GameState, locId: String, inside: Boolean, itemId: String, by: String) {
+        // v0.17.0b: no litter drops indoors. A drop stores no
+        // position, so indoors it rendered at a hash-random
+        // floor spot — an item icon floating at floor level
+        // (the sock in Lucky's school screenshots). Interiors
+        // stay clean; outdoor litter is untouched.
+        if (inside) return
         // #40 VISITED PLACES REMEMBERED: spots the player keeps clean
         // resist new mess — litter respawns slower where you tidied.
         if ((state.life["clean:$locId"] ?: 0) >= 3 && random.nextDouble() < 0.55) return

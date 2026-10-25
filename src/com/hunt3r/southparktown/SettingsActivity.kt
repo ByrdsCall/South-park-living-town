@@ -23,7 +23,7 @@ class SettingsActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = Prefs(this)
+        prefs = Prefs(AndroidSaveStore(this))
         SoundEngine.init(this)
         SoundEngine.applySettings(prefs.audioSettings())
 

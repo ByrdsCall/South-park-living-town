@@ -94,7 +94,7 @@ package com.hunt3r.southparktown
 //   the Journal 🎂 YOUR BIRTHDAY page (the derivation in
 //   plain words, the card kept, who wished, the party
 //   read-back). State is life/lifeText stamps only —
-//   pb* keys, listed at their sites and in the README.
+//   pb* keys, listed at their sites and in docs/TUNING.md.
 // ============================================================
 
 object PlayerBirthday {

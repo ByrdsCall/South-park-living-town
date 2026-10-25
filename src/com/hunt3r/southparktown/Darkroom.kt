@@ -108,7 +108,7 @@ data class DarkroomPrint(
 
 object Darkroom {
 
-    // ---------------- the dials (README tuning ledger) ----------------
+    // ---------------- the dials (docs/TUNING.md tuning ledger) ----------------
 
     const val SIZE_PRINT = "print"
     const val SIZE_ENLARGEMENT = "enlargement"

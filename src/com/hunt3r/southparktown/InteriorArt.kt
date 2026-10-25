@@ -845,15 +845,30 @@ object InteriorArt {
                 rr(0.282f, 0.242f, 0.323f, 0.267f, fp("#f0f0f0"))
                 txt(c, "HALL OF HONOR", 0.3025f * w, 0.368f * h, 0.0125f * h, "#c9a227")
                 // idetail: cubby-row — six cubbies, somebody's
-                // lunch is already missing
-                rr(0.40f, 0.26f, 0.58f, 0.44f, fp("#a8763e"))
-                for (gx in listOf(0.46f, 0.52f))
+                // lunch is already missing. v0.17.0b: the row
+                // belongs to the HALL span (0.00–0.20 of the
+                // wall); it used to sit at 0.40–0.58, inside
+                // the CAFETERIA's fifth, with bare placeholder
+                // shapes (flat block / disc / slab) for contents
+                rr(0.01f, 0.26f, 0.19f, 0.44f, fp("#a8763e"))
+                for (gx in listOf(0.07f, 0.13f))
                     ln(gx, 0.26f, gx, 0.44f, sp("#7a5228", 3f))
-                ln(0.40f, 0.35f, 0.58f, 0.35f, sp("#7a5228", 3f))
-                rr(0.40f, 0.26f, 0.58f, 0.44f, sp("#7a5228", 3f))
-                rr(0.415f, 0.285f, 0.435f, 0.335f, fp("#d43d2a"))
-                cir(0.545f, 0.315f, 0.011f, fp("#2a6fd4"))
-                rr(0.475f, 0.375f, 0.505f, 0.415f, fp("#2a9a4a"))
+                ln(0.01f, 0.35f, 0.19f, 0.35f, sp("#7a5228", 3f))
+                rr(0.01f, 0.26f, 0.19f, 0.44f, sp("#7a5228", 3f))
+                // a red lunchbox in the first cubby: lid line,
+                // handle and clasp — an object, not a block
+                rr(0.025f, 0.285f, 0.045f, 0.335f, fp("#c0452f"))
+                ln(0.025f, 0.30f, 0.045f, 0.30f, sp("#7a2a1e", 2f))
+                ln(0.030f, 0.285f, 0.040f, 0.285f, sp("#7a2a1e", 2f))
+                // a blue playground ball in the last cubby:
+                // a disc with a lighter inner ring
+                cir(0.16f, 0.315f, 0.011f, fp("#2a6fd4"))
+                cir(0.16f, 0.315f, 0.005f, fp("#7ab0e8"))
+                // a green backpack in the middle-lower cubby:
+                // body, front pocket, handle loop
+                rr(0.085f, 0.375f, 0.115f, 0.415f, fp("#2a9a4a"))
+                rr(0.093f, 0.39f, 0.107f, 0.415f, fp("#1f7a38"))
+                ln(0.095f, 0.375f, 0.105f, 0.375f, sp("#1f7a38", 2f))
             }
             "KidsPark" -> {
                 // idetail: pavilion-banner — lettered bunting
@@ -1620,7 +1635,12 @@ object InteriorArt {
             "desk" -> {
                 r(-0.4f, 0.5f, 0.4f, 0f, Paper.fillPaint("#77572f"))
                 r(-0.43f, 0.57f, 0.43f, 0.5f, Paper.fillPaint("#8a6a42"))
-                r(-0.05f, 0.70f, 0.30f, 0.57f, Paper.fillPaint("#d43d2a"))
+                // a book on the desk (v0.17.0b: a muted cover,
+                // a page block and a spine — it used to be one
+                // bare bright-red block)
+                r(-0.05f, 0.70f, 0.30f, 0.57f, Paper.fillPaint("#8a3a34"))
+                r(-0.03f, 0.685f, 0.28f, 0.585f, Paper.fillPaint("#e8e2d2"))
+                r(-0.05f, 0.70f, -0.035f, 0.57f, Paper.fillPaint("#5f2a24"))
             }
             "lamp" -> {
                 r(-0.04f, 0.62f, 0.04f, 0f, darkBrown)
@@ -1648,9 +1668,18 @@ object InteriorArt {
                     var bx = cx - 0.38f * pw
                     var k = 0
                     while (bx < cx + 0.28f * pw) {
-                        val bc = listOf("#d43d2a", "#2a6fd4", "#2a9a4a", "#e8c53a")[(k + row) % 4]
+                        // v0.17.0b: the muted book palette the
+                        // furniture painter already uses, plus a
+                        // spine shade line — the old cycle was
+                        // four flat primaries (red blocks on
+                        // shelves in Lucky's screenshots)
+                        val bc = listOf("#7a4a3a", "#33512f", "#2a4a8a",
+                            "#8a6a3a", "#6a3a5a", "#e8e2d2")[(k + row) % 6]
                         c.drawRect(bx, baseY - topF * ph, bx + pw * 0.09f,
                             baseY - (topF - 0.22f) * ph, Paper.fillPaint(bc))
+                        c.drawRect(bx + pw * 0.02f, baseY - topF * ph,
+                            bx + pw * 0.035f, baseY - (topF - 0.22f) * ph,
+                            Paper.fillPaint(darkerHex(bc, 0.65f)))
                         bx += pw * 0.13f
                         k++
                     }
@@ -2266,6 +2295,11 @@ object FurnitureArt {
                             "#e8e2d2")[rnd.nextInt(6)]
                         c.drawRect(bx, sy - bh2, minOf(bx + bw2, maxX), sy,
                             Paper.fillPaint(bookHex, 200))
+                        // v0.17.0b: a spine shade line per book,
+                        // so a shelf reads as books, not blocks
+                        c.drawRect(bx + bw2 * 0.22f, sy - bh2,
+                            bx + bw2 * 0.36f, sy,
+                            Paper.fillPaint(darkerHex(bookHex, 0.65f), 200))
                         bx += bw2 + fw * 0.025f
                     }
                 }

@@ -64,6 +64,60 @@ object FigureCompose {
      *  blob may not form. */
     const val PITCH_SLACK = 1.02f
 
+    /** v0.17.0b: THE FEET ELLIPSE — the only collision
+     *  shape a figure has. A paper kid collides with
+     *  what his FEET touch, never with his whole body
+     *  box: the ellipse is the ground shadow the painters
+     *  already draw under every figure (half-width 0.30
+     *  of height), squashed flat in depth — 0.10 of
+     *  height is under half the tightest row pitch
+     *  [compose] ever deals (0.54 of height), so figures
+     *  a row apart can never touch. The v0.17.0a
+     *  playtest failure was collision read off the BODY
+     *  pitch (0.72-wide bodies at PITCH_SLACK): walking
+     *  one row dealt every figure in it sideways. */
+    const val FEET_RX_OVER_FH = 0.30f
+    const val FEET_RY_OVER_FH = 0.10f
+
+    /** One figure's ground footprint, in screen px:
+     *  center x, feet line, on-screen height. */
+    data class Feet(val name: String, val cx: Float,
+                    val feetY: Float, val fh: Float)
+
+    fun feetRx(fh: Float): Float = fh * FEET_RX_OVER_FH
+    fun feetRy(fh: Float): Float = fh * FEET_RY_OVER_FH
+
+    /** The normalized ellipse distance² between the feet
+     *  at ([ax], [ay]) for a figure [afh] tall and figure
+     *  [b]'s: < 1 inside, 1 exactly on the edge, > 1 clear. */
+    fun feetDist2(ax: Float, ay: Float, afh: Float,
+                  b: Feet): Float {
+        val rx = feetRx(afh) + feetRx(b.fh)
+        val ry = feetRy(afh) + feetRy(b.fh)
+        if (rx <= 0f || ry <= 0f) return Float.MAX_VALUE
+        val dx = (ax - b.cx) / rx
+        val dy = (ay - b.feetY) / ry
+        return dx * dx + dy * dy
+    }
+
+    /** True when the feet ellipse at ([ax], [ay]) for a
+     *  figure [afh] tall overlaps figure [b]'s. */
+    fun feetTouch(ax: Float, ay: Float, afh: Float,
+                  b: Feet): Boolean = feetDist2(ax, ay, afh, b) < 1f
+
+    /** The center x a figure at ([ax], [ay]) must move
+     *  to so its feet ellipse rests exactly ON [b]'s
+     *  edge, on the side it already stands. Only
+     *  meaningful while the two touch (or nearly). */
+    fun feetEdgeX(ax: Float, ay: Float, afh: Float,
+                  b: Feet): Float {
+        val rx = feetRx(afh) + feetRx(b.fh)
+        val ry = feetRy(afh) + feetRy(b.fh)
+        val dyN = ((ay - b.feetY) / ry).coerceIn(-1f, 1f)
+        val half = rx * kotlin.math.sqrt(1f - dyN * dyN)
+        return if (ax < b.cx) b.cx - half else b.cx + half
+    }
+
     /** The crowd window's width, in screen widths. The
      *  world is 3.4–5.1 screens wide after the widening;
      *  a crowd gathers in this much of it around the

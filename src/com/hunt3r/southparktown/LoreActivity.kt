@@ -32,7 +32,7 @@ class LoreActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ensureLoreLoaded(this)
-        liveState = try { Prefs(this).loadGame() } catch (e: Exception) { null }
+        liveState = try { Prefs(AndroidSaveStore(this)).loadGame() } catch (e: Exception) { null }
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

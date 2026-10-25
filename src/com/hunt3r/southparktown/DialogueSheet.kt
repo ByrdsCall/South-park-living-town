@@ -56,8 +56,10 @@ class BubbleView(
         val w = width.toFloat()
         val h = height.toFloat()
         val rect = RectF(4f, 4f, w - 4f, h - tailH)
-        // shadow
-        c.drawRoundRect(RectF(rect.left + 3, rect.top + 4, rect.right + 3, rect.bottom + 4),
+        // shadow — v0.17.0b: flush at the bottom edge; the old
+        // +4 overhang poked out under the body (the tail covers
+        // only the middle) and read as a gray blob
+        c.drawRoundRect(RectF(rect.left + 3, rect.top + 4, rect.right + 3, rect.bottom),
             14f, 14f, Paper.fillPaint("#000000", 80))
         // tail
         val tailX = if (alignRight) rect.right - 70 else rect.left + 60

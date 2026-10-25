@@ -49,7 +49,7 @@ class GameView @JvmOverloads constructor(
      *  is how the darkroom's print wall hangs the actual
      *  prints with the album's own code. Never attached. */
     private val photoRenderer by lazy { PhotoView(context) }
-    private val prefs by lazy { Prefs(context) }
+    private val prefs by lazy { Prefs(AndroidSaveStore(context)) }
 
     /** v0.16.0d (stage 8): the current boil translation for
      *  the scene's painted backdrop — a seeded ±1px breathing
@@ -254,6 +254,16 @@ class GameView @JvmOverloads constructor(
     private var playerPhasePerFrac = 22f
     private var stepSnow = false
     private var stepInside = false
+    // v0.17.0b: the scene's composed feet footprints
+    // (crowd + travelers, screen px), refreshed by every
+    // drawFigures and read by the walk loop's contact
+    // clamp (PaperWalk.stepClamped) and the player's own
+    // draw yield. Figures are never IN this list as
+    // things to move — it is the list of ground the
+    // player may not enter, and nothing else reads it.
+    private var crowdBlockers: List<FigureCompose.Feet> =
+        emptyList()
+    private var crowdFhBase = 0f
     private data class StepPuff(val x: Float, val feetY: Float,
                                 val bornTick: Long)
     private val stepPuffs = mutableListOf<StepPuff>()
@@ -296,7 +306,12 @@ class GameView @JvmOverloads constructor(
         }
         if (!pwalk.walking) return
         val prevPhase = pwalk.phase
-        val (ns, fired) = PaperWalk.step(pwalk, dt, playerPhasePerFrac)
+        // v0.17.0b: the walk is contact-clamped — the
+        // player stops (or slides) at a figure's FEET,
+        // and no cast member is ever displaced by him
+        val (ns, fired) = PaperWalk.stepClamped(pwalk, dt,
+            playerPhasePerFrac, crowdBlockers, worldWCache,
+            viewHCache, stepInside, crowdFhBase)
         pwalk = ns
         // v0.16.0e (spec B4): the foot-down NOTIFIES — the
         // only write-back animation gets. Each phase
@@ -935,10 +950,11 @@ class GameView @JvmOverloads constructor(
             val cxm = (room.x0 + room.x1) / 2f * worldW
             c.drawText(room.label.uppercase(), cxm, h * 0.135f, labelP)
         }
-        // the layout's title, small, at the room's heart
-        val titleP = Paper.textPaint("#ffffff", 12f * 1f)
-        titleP.textAlign = Paint.Align.CENTER
-        c.drawText(layout.title, worldW * 0.5f, h * 0.165f, titleP)
+        // v0.17.0b: the layout title is NOT drawn here — it
+        // lives in exactly two places (the activity's red
+        // locLabel and InteriorArt's parchment sign). A third
+        // white copy at the room's heart ghosted over the
+        // red label in Lucky's school screenshots.
         // furniture
         // v0.16.0b: the ladder IS kid units (InteriorLayouts:
         // "a chair is a chair next to a kid figure in EVERY
@@ -3510,7 +3526,11 @@ class GameView @JvmOverloads constructor(
             hits.add(Hit("trash", cont.id,
                 RectF(cx - size, baseY - size * 1.2f, cx + size, baseY + 8)))
         }
-        val litterHere = st.litter.filter { it.locId == locId && it.inside == inside }
+        // v0.17.0b: indoor drops are never drawn (positionless
+        // legacy drops from older saves included) — see
+        // Engine.dropLitter's indoor gate
+        val litterHere = if (inside) emptyList()
+            else st.litter.filter { it.locId == locId && !it.inside }
         for (drop in litterHere) {
             val lr = Random(seed + drop.id.hashCode())
             val lx = worldW * (0.06f + lr.nextFloat() * 0.88f)
@@ -3744,6 +3764,16 @@ class GameView @JvmOverloads constructor(
                     }
             }.sortedBy { it.cx }
         }
+        // v0.17.0b: publish the scene's feet footprints
+        // for the walk clamp and the player's draw yield
+        crowdFhBase = fhBase
+        crowdBlockers = composed.placed.map {
+            FigureCompose.Feet(it.name, it.cx, it.feetY,
+                it.fh)
+        } + travelers.map {
+            FigureCompose.Feet(it.name, it.cx, it.feetY,
+                it.fh)
+        }
         // paint back-to-front by composed feet line (the
         // y-sort PaperScene.depthSorted states), left to
         // right within a feet line
@@ -3766,8 +3796,22 @@ class GameView @JvmOverloads constructor(
         fun drawPlayerNow() {
             if (playerDrawn) return
             playerDrawn = true
-            val px = pwalk.x * worldW
             val pfh = fhBase * WalkBand.depthScale(pwalk.band)
+            // v0.17.0b: the player YIELDS at the draw too.
+            // The walk clamp keeps him out of every feet
+            // ellipse while he moves, but a crowd can
+            // compose around a standing player (a tick
+            // turns, the room refills) — his sprite then
+            // steps to the ellipse edge himself. No
+            // figure's position is ever recomputed for
+            // his sake, at any layer.
+            var px = pwalk.x * worldW
+            for (b in crowdBlockers) {
+                if (FigureCompose.feetTouch(px, playerBaseY,
+                        pfh, b))
+                    px = FigureCompose.feetEdgeX(px,
+                        playerBaseY, pfh, b)
+            }
             // the paper shadow every cut-out stands on
             c.drawOval(RectF(px - pfh * 0.30f, playerBaseY - pfh * 0.030f,
                 px + pfh * 0.30f, playerBaseY + pfh * 0.048f),
@@ -3859,27 +3903,17 @@ class GameView @JvmOverloads constructor(
         // drawn with the crowd's own calls (hero costume
         // and holiday costume read as they do standing;
         // the snow lies on the walker's own crown by the
-        // crowd's derived-ellipse math). A walker never
-        // crosses THROUGH the player: inside body pitch
-        // of the New Kid at his row, the walker steps to
-        // the pitch's nearer edge, as the crowd does.
+        // crowd's derived-ellipse math). v0.17.0b: a
+        // walker crosses the player's ground on its own
+        // route, unshoved — the old step-aside that
+        // dealt the WALKER to the pitch's edge is gone;
+        // if their feet ellipses meet, the PLAYER's
+        // sprite yields (drawPlayerNow), as it does for
+        // the standing crowd.
         var travelerIdx = 0
         fun drawTraveler(t: TravelerDraw) {
             val a = st.agents[t.name] ?: return
-            var cx = t.cx
-            run {
-                val px = pwalk.x * worldW
-                if (kotlin.math.abs(t.feetY - playerBaseY) <
-                    t.fh * 0.34f) {
-                    val pw = fhBase * WalkBand.depthScale(pwalk.band) *
-                        FigureCompose.WIDTH_RATIO
-                    val need = (t.fh * FigureCompose.WIDTH_RATIO +
-                        pw) / 2f * FigureCompose.PITCH_SLACK
-                    val dx = cx - px
-                    if (kotlin.math.abs(dx) < need)
-                        cx = px + (if (dx < 0f) -need else need)
-                }
-            }
+            val cx = t.cx
             c.drawOval(RectF(cx - t.fh * 0.30f,
                 t.feetY - t.fh * 0.030f,
                 cx + t.fh * 0.30f, t.feetY + t.fh * 0.048f),
@@ -4037,25 +4071,19 @@ class GameView @JvmOverloads constructor(
                 val jr = Random(seed + fig.name.hashCode())
                 kx += (jr.nextFloat() - 0.5f) * composed.windowW * 0.008f
             }
-            // v0.16.0b: the compose pass cannot see the player —
-            // reserve his ground. A same-row figure whose center
-            // lands inside body pitch of the player's center is
-            // dealt to the nearer edge of that pitch, so nobody
-            // stands IN the New Kid (the crowd pile over the
-            // player in Lucky's Bus Stop / Main Street shots).
-            run {
-                val px = pwalk.x * worldW
-                if (kotlin.math.abs(placed.feetY - playerBaseY) <
-                    placed.fh * 0.34f) {
-                    val pw = fhBase * WalkBand.depthScale(pwalk.band) *
-                        FigureCompose.WIDTH_RATIO
-                    val need = (placed.fh * widthRatioOf(fig.name) + pw) /
-                        2f * FigureCompose.PITCH_SLACK
-                    val dx = kx - px
-                    if (kotlin.math.abs(dx) < need)
-                        kx = px + (if (dx < 0f) -need else need)
-                }
-            }
+            // v0.17.0b: NO player reservation here, by
+            // law. The v0.16.0b block that stood on this
+            // spot dealt every same-row figure whose
+            // center landed inside BODY pitch of the
+            // player to the pitch's edge — so walking
+            // one row visibly shoved every figure in it
+            // (Lucky's v0.17.0a playtest: "collision with
+            // characters causes them to move"). A figure's
+            // composed spot is final. The PLAYER keeps
+            // out of feet ellipses at the walk layer
+            // (PaperWalk.stepClamped) and yields at his
+            // own draw (drawPlayerNow) — nobody else ever
+            // moves for him.
             val baseY = placed.feetY
             // v0.15.0c: the player paints in baseline order
             // with the crowd — everyone whose feet sit
@@ -4402,6 +4430,20 @@ class GameView @JvmOverloads constructor(
             posList.add(Pos(fig.name, fig.isCast, fig.asleep, walking,
                 st.agents[fig.name]?.destination, kx, baseY, fh,
                 mailGlyph, alarmSprint))
+            // v0.17.0b #18 POCKET FIDGETS: the habit glyph draws
+            // HERE, in the figure's own z-slot — it used to be
+            // painted in the flat Phase-2 pass after every
+            // figure, so a back figure's pale glyph landed on
+            // the forehead of whoever stood in front of them
+            // (the "small white dots" in Lucky's screenshots)
+            if (!fig.asleep && !walking) {
+                val habits = listOf("♪", "…", "⚽", "🕐")
+                val seedN2 = (fig.name.hashCode() and 0x7fffffff)
+                val hg = habits[(((tick / 55) + seedN2) % habits.size).toInt()]
+                val hp = Paper.textPaint("#ffe9a8", 13f, bold = true, casual = true)
+                hp.textAlign = Paint.Align.CENTER
+                c.drawText(hg, kx + fh * 0.30f, baseY - fh - 8, hp)
+            }
             // ---- name tags: front row + current speakers only (back
             // rows stay clean); long names shrink, then ellipsize to
             // the slot so tags can never mush into each other again
@@ -4479,12 +4521,9 @@ class GameView @JvmOverloads constructor(
             if (p.asleep) continue
             val headY = p.baseY - p.fh
             val seedN = (p.name.hashCode() and 0x7fffffff)
-            // #18 POCKET FIDGETS: waiting figures cycle tiny habits
-            if (!p.walking) {
-                val habits = listOf("♪", "…", "⚽", "🕐")
-                val g = habits[(((tick / 55) + seedN) % habits.size).toInt()]
-                glyph(g, p.x + p.fh * 0.30f, headY - 8, 13f, "#ffe9a8")
-            }
+            // #18 POCKET FIDGETS moved into the figure's own
+            // draw slot in v0.17.0b (a flat post-pass stamped
+            // them onto the foreheads of figures in front)
             // #17 COLD-SNAP SNEEZES in freezing weather
             if (!inside && st.weatherId in setOf("heavy_snow", "blizzard") &&
                 (tick + seedN * 7) % 460 < 14) {
@@ -4772,7 +4811,9 @@ class GameView @JvmOverloads constructor(
         val bh = Chrome.bubbleHeight(show.size, fs)
         val rect = RectF(Chrome.BUBBLE_MARGIN_PX, top,
             Chrome.BUBBLE_MARGIN_PX + bw, top + bh)
-        c.drawRoundRect(RectF(rect.left + 3, rect.top + 4, rect.right + 3, rect.bottom + 4),
+        // v0.17.0b: shadow flush at the bottom edge (the old
+        // +4 overhang read as a gray blob under the bubble)
+        c.drawRoundRect(RectF(rect.left + 3, rect.top + 4, rect.right + 3, rect.bottom),
             14f, 14f, Paper.fillPaint("#000000", 80))
         c.drawRoundRect(rect, 14f, 14f, Paper.fillPaint(Chrome.PAPER_WHITE))
         c.drawRoundRect(rect, 14f, 14f, Paper.strokePaint("#000000", 3f))

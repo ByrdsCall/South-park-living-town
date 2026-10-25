@@ -23,7 +23,7 @@ class QuestActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ensureLoreLoaded(this)
-        val prefs = Prefs(this)
+        val prefs = Prefs(AndroidSaveStore(this))
         prefs.loadNpcMemory()
         val state = prefs.loadGame()
 

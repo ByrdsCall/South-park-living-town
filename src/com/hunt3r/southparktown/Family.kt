@@ -93,7 +93,7 @@ object Family {
      *  first morning (absDay % 7 == 0), IF a family dinner was
      *  sat at within the last 7 days — Mom's rule, stated in
      *  her own lines. It is the ONLY coin source this build
-     *  adds, and it is named in the README tuning ledger:
+     *  adds, and it is named in the docs/TUNING.md tuning ledger:
      *  against a full paper-route week's 30 🪙 (5 shifts of
      *  2 base + 4 tasks), 3 🪙 for showing up at your own
      *  table is a gesture, not a wage. */
@@ -1078,7 +1078,7 @@ object Family {
      *  bark from a parent who is present, per decide call
      *  (GameActivity consults on its refresh rhythm). Low on
      *  purpose: a house murmurs, it doesn't narrate. Named
-     *  here and in the README ledger beside the cast's own
+     *  here and in the docs/TUNING.md ledger beside the cast's own
      *  ARRIVAL_CHANCE. */
     const val HOME_IDLE_CHANCE = 0.08
 

@@ -31,7 +31,7 @@ class MainActivity : Activity() {
         // v0.2.0b: start warming the synthesized sounds during the
         // splash (background thread — the routing doesn't wait)
         SoundEngine.init(this)
-        SoundEngine.applySettings(Prefs(this).audioSettings())
+        SoundEngine.applySettings(Prefs(AndroidSaveStore(this)).audioSettings())
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -75,7 +75,7 @@ class MainActivity : Activity() {
         setContentView(root)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            val next = if (Prefs(this).hasPlayer()) GameActivity::class.java
+            val next = if (Prefs(AndroidSaveStore(this)).hasPlayer()) GameActivity::class.java
                        else CreatorActivity::class.java
             startActivity(Intent(this, next))
             finish()

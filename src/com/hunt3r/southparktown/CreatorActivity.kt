@@ -59,7 +59,7 @@ class CreatorActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = Prefs(this)
+        prefs = Prefs(AndroidSaveStore(this))
         // v0.5.0b: load the town's lock shelves (syncing any
         // wardrobe grants owed since the town last ran)
         try {

@@ -21,7 +21,7 @@ import kotlin.math.sqrt
 // here — origin scene, destination, and the walker's
 // remaining path length at departure — in the save's
 // lifeText (key "trip:<name>", disclosed in the v0.16.0c
-// README ledger; additive only, cleared on arrival).
+// docs/TUNING.md ledger; additive only, cleared on arrival).
 // Presence is then DERIVED, purely, from that record:
 //
 //   route    = Walk.route(origin, destination) — the

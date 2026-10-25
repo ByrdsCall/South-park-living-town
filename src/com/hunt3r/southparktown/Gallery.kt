@@ -327,7 +327,7 @@ object GalleryCalendar {
 
 object Gallery {
 
-    // ---------------- the dials (README tuning ledger) ----------------
+    // ---------------- the dials (docs/TUNING.md tuning ledger) ----------------
 
     const val VENUE = "CityHall"
     const val VENUE_NAME = "the Community Hall"

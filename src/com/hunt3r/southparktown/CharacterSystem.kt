@@ -605,8 +605,14 @@ object HeadStack {
                 ({ x: Float -> sideY - 5f * (1f - t(x) * t(x)) })
             }
             "mop" -> ({ x: Float -> f - 2f + 4.5f * tri(x, 17f) })
-            "messy" -> ({ x: Float -> f - 2f - bump(x, MESSY_BUMPS, 15f) })
-            "shaggy" -> ({ x: Float -> f + 2f - bump(x, SHAGGY_BUMPS, 16f) })
+            // v0.17.0b (Bible Part 9): the bedhead jag may DIP
+            // below the base line but must never RISE far above
+            // it — the old full-rise bump carved the messy
+            // hairline up to 7 units over f, thinning the cap
+            // to a crescent and leaving bare skin domes on the
+            // uncovered messy adults (Randy, Maxi, Ned, Adler).
+            "messy" -> ({ x: Float -> f - 2f + bump(x, MESSY_BUMPS, 15f) * 0.55f })
+            "shaggy" -> ({ x: Float -> f + 2f - bump(x, SHAGGY_BUMPS, 16f) * 0.4f })
             "spiky" -> ({ _: Float -> f + 2f })
             "sidepart" -> ({ x: Float -> f + 2f + 2.5f * t(x) })
             "swirl" -> {

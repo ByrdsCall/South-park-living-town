@@ -51,7 +51,7 @@ import kotlin.random.Random
 
 object School {
 
-    // ---------------- the dials (README tuning ledger) ----------------
+    // ---------------- the dials (docs/TUNING.md tuning ledger) ----------------
 
     /** Which weekdays are school days (Jobs.weekdayOf: 0 = Sunday).
      *  Monday through Friday — the fourth grade rests on weekends,

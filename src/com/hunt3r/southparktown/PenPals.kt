@@ -80,7 +80,7 @@ import kotlin.random.Random
  * town map is fixed and gains no Pinewood locations, and
  * the album's camera, which composes from where the
  * player actually stands in town, takes no Pinewood
- * photo (stated in the README). Each kept beat pays in
+ * photo (stated in docs/TUNING.md). Each kept beat pays in
  * her lane only. The morning after the trip, her
  * thank-you rides home mail — the exact symmetry of
  * season one's. Below the band in a return season, the
@@ -128,7 +128,7 @@ object PenPals {
      *  kid spec (rust ponytail, pine-green top, plum pants,
      *  freckles), derived through the same KidArt geometry
      *  as any cast kid. NOT a cast slot: no sheet joins the
-     *  98 in the goal's sheet set (stated in the README). */
+     *  98 in the goal's sheet set (stated in docs/TUNING.md). */
     val SPEC: SheetSpec = SheetSpec(
         skin = "#f2c79b", hairStyle = "ponytail",
         hairColor = "#8a4b2a", hatId = "none",

@@ -18,8 +18,14 @@ MANIFEST=$APP/AndroidManifest.xml
 OUT=$APP/out
 mkdir -p $OUT/gen $OUT/classes $OUT/dex
 
-VERSION_CODE=${VERSION_CODE:-1}
-VERSION_NAME=${VERSION_NAME:-0.1.0}
+# v0.18.0a (D7): version identity lives ONLY in Version.kt —
+# parse both consts from it; fail loudly when unparseable so
+# a drifted or renamed declaration can never ship silently.
+VERSION_KT=$APP/src/com/hunt3r/southparktown/Version.kt
+VERSION_CODE=$(sed -n 's/.*const val VERSION_CODE: Int = \([0-9][0-9]*\).*/\1/p' "$VERSION_KT" | head -1)
+VERSION_NAME=$(sed -n 's/.*const val VERSION_NAME: String = "\([^"]*\)".*/\1/p' "$VERSION_KT" | head -1)
+[ -n "$VERSION_CODE" ] && [ -n "$VERSION_NAME" ] || { echo "cannot parse version from Version.kt"; exit 1; }
+echo "version: $VERSION_NAME (code $VERSION_CODE) from Version.kt"
 
 echo "--- checking tools ---"
 [ -x "$KOTLINC" ] || { echo "kotlinc missing at $KOTLINC"; exit 1; }

@@ -191,7 +191,7 @@ class GameActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ensureLoreLoaded(this)
-        prefs = Prefs(this)
+        prefs = Prefs(AndroidSaveStore(this))
         engine = Engine()
         // v0.2.0b: synthesized sound (SoundGen renders, SoundEngine
         // plays; rendering warms up on its own background thread)

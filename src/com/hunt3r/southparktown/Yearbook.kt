@@ -148,7 +148,7 @@ data class YearbookVolume(
 
 object Yearbook {
 
-    // ---------------- the dials (README tuning ledger) ----------------
+    // ---------------- the dials (docs/TUNING.md tuning ledger) ----------------
 
     /** A starred photo's judging bonus, in EVERY category
      *  it enters. The star is the player's one editorial

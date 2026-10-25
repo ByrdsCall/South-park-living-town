@@ -18,7 +18,7 @@ class CollectionActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val prefs = Prefs(this)
+        val prefs = Prefs(AndroidSaveStore(this))
         val state = prefs.loadGame()
         val found = state?.collected ?: emptySet()
 

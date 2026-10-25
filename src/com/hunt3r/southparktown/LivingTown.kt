@@ -390,7 +390,7 @@ object ActionAnims {
      *  talk-bob oscillation, the walk bob) are cycle
      *  additivity, not transitions, and the bus's pull-up
      *  ease is a vehicle, not a figure — all logged in
-     *  the v0.16.0e README ledger. */
+     *  the v0.16.0e docs/TUNING.md ledger. */
     fun sitPhase(elapsed: Int, ticks: Int, down: Boolean): Float {
         val f = (elapsed.toFloat() / ticks.coerceAtLeast(1)).coerceIn(0f, 1f)
         val q = (kotlin.math.floor(f * SIT_STEPS) / (SIT_STEPS - 1))
