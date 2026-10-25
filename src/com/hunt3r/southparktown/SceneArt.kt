@@ -75,7 +75,7 @@ object SceneArt {
         if (night && TownInfo.skySpecial == SkyState.AURORA) {
             val inten = if (TownInfo.auroraIntensity > 0f)
                 TownInfo.auroraIntensity else 0.8f
-            val t = System.currentTimeMillis() / 900f
+            val t = RenderClock.nowMs() / 900f
             val washCols = listOf("#3ae88a", "#2fd4b8", "#3ab8e8", "#8a6ae8")
             val washBase = listOf(34, 26, 17, 11)
             for (band in washCols.indices) {
@@ -101,7 +101,7 @@ object SceneArt {
         // you look, with a slow shimmer in the tails.
         if (night && TownInfo.skySpecial == SkyState.METEOR) {
             val mr2 = Random(seed + 4242)
-            val shimmer = (System.currentTimeMillis() / 700 % 3).toInt()
+            val shimmer = (RenderClock.nowMs() / 700 % 3).toInt()
             repeat(4) { i ->
                 val sx = w * (0.12f + mr2.nextFloat() * 0.68f)
                 val sy = h * (0.05f + mr2.nextFloat() * 0.20f)
@@ -1362,7 +1362,7 @@ object SceneArt {
             "TegridyFarms" -> {
                 // the silo beacon, blinking on its true bearing
                 if (band == "night" &&
-                    (System.currentTimeMillis() / 800) % 2L == 0L) {
+                    (RenderClock.nowMs() / 800) % 2L == 0L) {
                     val sx = cx + sh * 0.52f
                     val sy = baseY - sh * 1.02f
                     c.drawOval(RectF(sx - sh * 0.09f, sy - sh * 0.09f,
@@ -1744,7 +1744,7 @@ object SceneArt {
                     val cooking = (tm in 7 * 60 until 9 * 60) ||
                         (tm in 17 * 60 until 19 * 60)
                     val puffs = if (cooking) 3 else 2
-                    val t = System.currentTimeMillis() / 1100f
+                    val t = RenderClock.nowMs() / 1100f
                     for (i in 0 until puffs) {
                         val ph = (t + i * 0.9f) % 2.4f
                         val pr = bh * (0.05f + ph * 0.045f) * (if (cooking) 1.35f else 1f)
@@ -1871,7 +1871,7 @@ object SceneArt {
                         val lit = windowLit(i)
                         val col = when {
                             tvFlicker ->
-                                if ((System.currentTimeMillis() / 280) % 2L == 0L)
+                                if ((RenderClock.nowMs() / 280) % 2L == 0L)
                                     "#7ab8e8" else "#5a94c8"
                             lit -> warmth
                             else -> "#2a3a4a"
@@ -2954,7 +2954,7 @@ object SceneArt {
                 c.drawLine(sx - 52, baseY + 26, sx - 40, sy, frame)
                 c.drawLine(sx + 52, baseY + 26, sx + 40, sy, frame)
                 c.drawLine(sx - 44, sy, sx + 44, sy, frame)
-                val sway = kotlin.math.sin(System.currentTimeMillis() * 0.0011f) * 6f
+                val sway = kotlin.math.sin(RenderClock.nowMs() * 0.0011f) * 6f
                 for (i in 0..1) {
                     val seatX = sx - 22 + i * 40
                     val chain = Paper.strokePaint(col("#3a3f4a"), 2f)
@@ -5013,7 +5013,7 @@ object SceneArt {
                 pool(bx, uw * 0.034f, warmth, 36)
                 // light: shack-tv-window — TV leaks through the boards
                 val wx = right - bw * 0.10f - winW
-                val fl = if ((System.currentTimeMillis() / 280) % 2L == 0L) 165 else 110
+                val fl = if ((RenderClock.nowMs() / 280) % 2L == 0L) 165 else 110
                 c.drawRect(wx + 2, winY + winW * 0.36f, wx + winW - 2,
                     winY + winW * 0.46f, fp("#7ab8e8", fl))
                 c.drawRect(wx + 2, winY + winW * 0.56f, wx + winW - 2,
@@ -5030,7 +5030,7 @@ object SceneArt {
             }
             "CartmanHouse" -> if (windowsLive) {
                 // light: cartman-tv-window — the big TV, window two
-                val fl = if ((System.currentTimeMillis() / 280) % 2L == 0L) 185 else 130
+                val fl = if ((RenderClock.nowMs() / 280) % 2L == 0L) 185 else 130
                 winFill(1, "#7ab8e8", fl)
                 winHalo(1, "#7ab8e8", 40)
                 // light: cartman-kitchen-window — warm, snacks happen here
@@ -5304,7 +5304,7 @@ object SceneArt {
                 c.drawRect(bx - 36, baseY - 73, bx - 28, baseY - 63, fp(warmth, 255))
                 pool(bx - 20, uw * 0.045f, warmth, 36)
                 // light: tegridy-silo-beacon — the silo blinks at planes
-                if (night && (System.currentTimeMillis() / 800) % 2L == 0L) {
+                if (night && (RenderClock.nowMs() / 800) % 2L == 0L) {
                     val sx = cx + uw * 0.015f + uw * 0.0225f
                     val sy = baseY - h * 0.225f
                     glow(sx, sy, 13f, 13f, "#ff4444", 60)

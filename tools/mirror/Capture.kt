@@ -30,6 +30,23 @@ import javax.imageio.ImageIO
  */
 object Capture {
 
+    /**
+     * v0.18.0c (Phase 1 — Sight): golden-harness hooks, used
+     * ONLY by Golden.run. Normal captures never set these and
+     * stage exactly as they always have. In golden mode the
+     * staged Engine is built from [goldenSeed] (the shipped
+     * default seed is the wall clock — the population would
+     * differ on every run), the view's ticker is detached and
+     * its tick reset to zero the moment it attaches (the shim
+     * Handler runs the ticker on the Swing EDT, so a capture
+     * that leaves it alive renders a scheduling-dependent
+     * frame), and the finished bitmap is handed to
+     * [bitmapSink] instead of being written as a QA file.
+     */
+    var goldenSeed: Long? = null
+    var goldenMode: Boolean = false
+    var bitmapSink: ((String, Bitmap) -> Unit)? = null
+
     fun run(args: List<String>, dataDir: File, projectDir: File) {
         if (args.contains("--trip")) {
             val name = args[args.indexOf("--trip") + 1]
@@ -62,6 +79,7 @@ object Capture {
         var crowd = listOf<String>()
         var dumpHits = false
         var fiction: String? = null
+        var walk: FloatArray? = null
         val scenes = mutableListOf<String>()
         var i = 0
         while (i < args.size) {
@@ -79,6 +97,11 @@ object Capture {
                 "--pan" -> pan = args[++i].toFloat()
                 "--hits" -> dumpHits = true
                 "--fiction" -> fiction = args[++i]
+                "--walk" -> {
+                    val p = args[++i].split(",")
+                        .map { it.trim().toFloat() }
+                    walk = floatArrayOf(p[0], p[1], p[2], p[3])
+                }
                 "--crowd" -> crowd = args[++i].split(",").map { it.trim() }.filter { it.isNotEmpty() }
                 else -> scenes.add(a)
             }
@@ -97,7 +120,7 @@ object Capture {
                     renderPhoto(spec.removePrefix("photo:"), outDir, w, h,
                         timeMin, weather, tag, appearance)
                 } else {
-                    render(spec, outDir, w, h, timeMin, weather, tag, frames, appearance, pan, crowd, dumpHits, fiction)
+                    render(spec, outDir, w, h, timeMin, weather, tag, frames, appearance, pan, crowd, dumpHits, fiction, walk)
                 }
             } catch (e: Exception) {
                 println("[capture] FAILED $spec: $e")
@@ -278,12 +301,15 @@ object Capture {
         .apply { isAccessible = true }
     private val camTargetField = GameView::class.java.getDeclaredField("camTargetX")
         .apply { isAccessible = true }
+    private val tickField = GameView::class.java.getDeclaredField("tick")
+        .apply { isAccessible = true }
 
-    private fun render(spec: String, outDir: File, w: Int, h: Int, timeMin: Int,
+    fun render(spec: String, outDir: File, w: Int, h: Int, timeMin: Int,
                        weather: String, tag: String, frames: Int,
                        appearance: Map<String, String>, pan: Float,
                        crowd: List<String>, dumpHits: Boolean = false,
-                       fiction: String? = null) {
+                       fiction: String? = null,
+                       walk: FloatArray? = null) {
         // a fiction section id itself carries a colon
         // (fiction:dungeon) — shield it through the split
         val parts = spec.replace("sec=fiction:", "sec=fiction~")
@@ -300,11 +326,21 @@ object Capture {
             }
         }
         // A fresh world each capture, run forward by the engine itself.
-        val engine = Engine()
+        // Golden mode pins the engine seed (see the hooks above).
+        val engine = if (goldenMode && goldenSeed != null) {
+            Engine(goldenSeed!!)
+        } else {
+            Engine()
+        }
         val st = engine.newState()
         engine.createPlayer(st, PLAYER_DEFAULT_NAME, appearance)
         var guard = 0
-        while (st.timeMin < timeMin && guard++ < 200) engine.advanceTime(st)
+        // Engine.step, not advanceTime alone: advanceTime
+        // dispatches waypoints but never walks them and
+        // never stamps Travel records, so a scene staged
+        // with it holds no travelers at all (runTrip's
+        // staging comment records the same lesson).
+        while (st.timeMin < timeMin && guard++ < 200) engine.step(st)
         st.timeMin = timeMin
         st.weatherId = weather
         st.lastConversation = emptyList()
@@ -368,10 +404,50 @@ object Capture {
         view.generated = MirrorMain.generatedFor(engine, st)
         view.layout(0, 0, w, h)
         view.attachForMirror()
+        if (goldenMode) {
+            // freeze the frame clock: detach kills the ticker
+            // (its EDT posts are the one async writer of tick),
+            // and tick is reset in case a post already landed.
+            view.detachForMirror()
+            tickField.setLong(view, 0L)
+        }
         // let the frame loop settle (wander phases, camera ease)
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         val loc = LOCATIONS[locId]
+        // v0.18.0b QA: stage a WALK — one settle frame
+        // first (the location key claims the spawn and
+        // the crowd publishes its feet, exactly as on
+        // device), then the player's PaperWalk is aimed
+        // across the scene and the frame loop's own
+        // ticker walks him. --frames decides how far
+        // into the walk the shutter falls.
+        val wk = walk
+        if (wk != null) {
+            view.draw(canvas)
+            val pwalkField = GameView::class.java
+                .getDeclaredField("pwalk")
+                .apply { isAccessible = true }
+            val start = PaperWalk.State(x = wk[0],
+                band = wk[1])
+            pwalkField.set(view, PaperWalk.tapGround(
+                start, wk[2], wk[3]))
+            for (a in st.agents.values) {
+                if (a.isPlayer || a.waypoints.isEmpty())
+                    continue
+                val pose = Travel.pose(st, a) ?: continue
+                val dir = if (pose.facingRight) "R"
+                    else "L"
+                val here = if (pose.sceneId == locId)
+                    " HERE" else ""
+                println("[walk] traveler ${a.name} " +
+                    "in ${pose.sceneId} at x=" +
+                    "${pose.xFrac} band=${Travel.BAND} " +
+                    "facing=$dir$here")
+            }
+            println("[walk] player staged (${wk[0]}, " +
+                "${wk[1]}) -> (${wk[2]}, ${wk[3]})")
+        }
         repeat(frames) {
             Thread.sleep(90)
             if (pan >= 0f && loc != null) {
@@ -383,6 +459,22 @@ object Capture {
                 camXField.setFloat(view, target)
             }
             view.draw(canvas)
+        }
+        if (wk != null) {
+            val pf = GameView::class.java
+                .getDeclaredField("pwalk")
+                .apply { isAccessible = true }
+            val end = pf.get(view) as PaperWalk.State
+            println("[walk] player ended at " +
+                "(${end.x}, ${end.band}) walking=" +
+                "${end.walking}")
+        }
+        val sink = bitmapSink
+        if (sink != null) {
+            sink(spec, bmp)
+            println("[capture] $spec -> (golden sink)")
+            if (dumpHits) dumpHitList(view)
+            return
         }
         val name = buildString {
             append(spec.replace(":", "_").replace("=", "-"))

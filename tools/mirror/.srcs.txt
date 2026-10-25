@@ -13,7 +13,6 @@
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Shenanigans.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/NpcMemory.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Quests.kt
-/home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/InteriorArt.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/CharacterSystem.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/NpcGen.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/KidArt.kt
@@ -52,7 +51,6 @@
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Finales.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Commissions.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Mystery4.kt
-/home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/SceneArt.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Dinners.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Jobs.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Votes.kt
@@ -120,7 +118,6 @@
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/MoveControl.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Fiction.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Rig.kt
-/home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Version.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/SaveStore.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/AndroidSaveStore.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/CollectionActivity.kt
@@ -135,7 +132,11 @@
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/QuestActivity.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/SettingsActivity.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/GameView.kt
+/home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/SceneArt.kt
+/home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/InteriorArt.kt
+/home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Version.kt
 /home/hatch/workspace/sptown-app/tools/mirror/Capture.kt
 /home/hatch/workspace/sptown-app/tools/mirror/FileSaveStore.kt
+/home/hatch/workspace/sptown-app/tools/mirror/Golden.kt
 /home/hatch/workspace/sptown-app/tools/mirror/MirrorMain.kt
 /home/hatch/workspace/sptown-app/tools/mirror/SheetGen.kt

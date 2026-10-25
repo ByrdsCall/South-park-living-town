@@ -53,17 +53,32 @@ Requires: `~/build-tools/kotlin` (kotlinc 1.9.24), `~/android-sdk`
 cd ~/workspace/sptown-app
 ./build_apk.sh            # → out/southpark-town.apk (debug-signed)
 ```
-Bump versions via `VERSION_CODE` / `VERSION_NAME` env vars.
+Bump versions in `src/com/hunt3r/southparktown/Version.kt` — the single
+source of version identity; `build_apk.sh` derives both the code and the
+name from it.
 
-## Status — v0.18.0a
+## Status — v0.18.0d
 
-Phase 0 — Bedrock (versionCode 127): structure only, zero behavior
-change. `Version.kt` is the single source of version identity;
-`Prefs` is a pure-Kotlin codec over the `SaveStore` seam
-(`AndroidSaveStore` on device, `FileSaveStore` in the mirror);
-a purity-wall scan pins the platform allowlist; this README split
-into `docs/`. Full entry: `docs/CHANGELOG.md`. Suite: 110,431 checks, 0 failures (SMOKE OK).
-APK: southpark-town.apk, 4,235,898 B, versionCode 127 / versionName 0.18.0a (aapt2 badging verified); signer SHA-256 a9997c1e73d8b38ab5e099b5cbb6c17ac0a9347c67c37399f3c6011562826ba6; lorebook md5 acff1c04e84dfd583dbc5b2e20ed50b5.
+Restructure Phase 2 — CANONICAL (versionCode 130): defect D2
+closed. The lifetime soak no longer bounds lifeText by a raw
+count (which swung 293–318 across identical trees and was
+recalibrated for measurement reasons at v0.16.0d). Keys are
+sorted before measuring, and the bound is a function of the
+canonical key set: `CanonKeys` reduces each key to its
+template (stamps to #, dates to @#, registry-named segments
+to *), and the year's templates are pinned two-sided (74
+required lifetime shapes + 1 allowed winter shape; 50 + 1 in
+the Q10 audit soak) with each shape's peak daily count
+bounded by a structural ceiling — registry arithmetic
+(literal shapes at 1, registry shapes at the live census,
+stamped shapes at their chain/record bounds), never a
+sampled maximum — and replay pins prove the measurement
+identical across insertion and hash orders. No game code
+changed. Full entry:
+`docs/CHANGELOG.md`. Suite: 110,538 checks, 0 failures
+(SMOKE OK) — identical across the phase's three verification
+recompiles, canonical bounds stable in all three.
+APK: southpark-town.apk, versionCode 130 / versionName 0.18.0d (aapt2 badging verified); signer SHA-256 a9997c1e73d8b38ab5e099b5cbb6c17ac0a9347c67c37399f3c6011562826ba6; lorebook md5 acff1c04e84dfd583dbc5b2e20ed50b5.
 
 ## Invariants
 

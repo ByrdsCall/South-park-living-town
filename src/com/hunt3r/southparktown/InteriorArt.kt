@@ -142,7 +142,7 @@ object InteriorArt {
         // #22 CURTAIN TWITCHES: the curtains part for a second now
         // and then — much more often in homes where you're liked.
         run {
-            val cycle = System.currentTimeMillis() / 1000f
+            val cycle = RenderClock.nowMs() / 1000f
             val period = if (TownInfo.curtainWarm) 6f else 14f
             val parted = (cycle % period) < 1.1f
             val gap = if (parted) winR.width() * 0.16f else winR.width() * 0.035f

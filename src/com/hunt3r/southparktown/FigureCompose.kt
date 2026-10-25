@@ -79,21 +79,47 @@ object FigureCompose {
     const val FEET_RX_OVER_FH = 0.30f
     const val FEET_RY_OVER_FH = 0.10f
 
+    /** v0.18.0b: THE HARD CORE of the feet ellipse —
+     *  the pass-by's inner zone (Lucky: "allow
+     *  characters to pass by each other so you don't
+     *  get trapped in crowds"). Inside the core-scaled
+     *  ellipse a figure's ground is still a wall: you
+     *  stop on its edge. Between the core edge and the
+     *  full edge lies the SOFT SHELL, where PaperWalk
+     *  lets you squeeze past at a reduced stride. At
+     *  half the full radii, two figures standing at
+     *  the crowd compose's own pitch always leave a
+     *  core-clear corridor between them — a crowd
+     *  tiled shoulder to shoulder stays traversable
+     *  through the gaps, while a lone figure in open
+     *  space still stops you dead at his feet. */
+    const val FEET_CORE_SCALE = 0.5f
+
     /** One figure's ground footprint, in screen px:
-     *  center x, feet line, on-screen height. */
+     *  center x, feet line, on-screen height.
+     *  [walking] marks a figure himself mid-walk (a
+     *  traveler crossing the scene) as opposed to
+     *  settled where he stands — PaperWalk's sidestep
+     *  law reads it: you sidle past a fellow walker,
+     *  you stop for a standing figure. */
     data class Feet(val name: String, val cx: Float,
-                    val feetY: Float, val fh: Float)
+                    val feetY: Float, val fh: Float,
+                    val walking: Boolean = false)
 
     fun feetRx(fh: Float): Float = fh * FEET_RX_OVER_FH
     fun feetRy(fh: Float): Float = fh * FEET_RY_OVER_FH
 
     /** The normalized ellipse distance² between the feet
      *  at ([ax], [ay]) for a figure [afh] tall and figure
-     *  [b]'s: < 1 inside, 1 exactly on the edge, > 1 clear. */
+     *  [b]'s: < 1 inside, 1 exactly on the edge, > 1 clear.
+     *  [scale] shrinks both ellipses about their own
+     *  centers — 1f is the full feet ellipse (the
+     *  0.17.0b law); FEET_CORE_SCALE reads the hard
+     *  core (v0.18.0b's pass-by). */
     fun feetDist2(ax: Float, ay: Float, afh: Float,
-                  b: Feet): Float {
-        val rx = feetRx(afh) + feetRx(b.fh)
-        val ry = feetRy(afh) + feetRy(b.fh)
+                  b: Feet, scale: Float = 1f): Float {
+        val rx = (feetRx(afh) + feetRx(b.fh)) * scale
+        val ry = (feetRy(afh) + feetRy(b.fh)) * scale
         if (rx <= 0f || ry <= 0f) return Float.MAX_VALUE
         val dx = (ax - b.cx) / rx
         val dy = (ay - b.feetY) / ry
@@ -103,16 +129,18 @@ object FigureCompose {
     /** True when the feet ellipse at ([ax], [ay]) for a
      *  figure [afh] tall overlaps figure [b]'s. */
     fun feetTouch(ax: Float, ay: Float, afh: Float,
-                  b: Feet): Boolean = feetDist2(ax, ay, afh, b) < 1f
+                  b: Feet, scale: Float = 1f): Boolean =
+        feetDist2(ax, ay, afh, b, scale) < 1f
 
     /** The center x a figure at ([ax], [ay]) must move
      *  to so its feet ellipse rests exactly ON [b]'s
      *  edge, on the side it already stands. Only
-     *  meaningful while the two touch (or nearly). */
+     *  meaningful while the two touch (or nearly).
+     *  [scale] as in [feetDist2]. */
     fun feetEdgeX(ax: Float, ay: Float, afh: Float,
-                  b: Feet): Float {
-        val rx = feetRx(afh) + feetRx(b.fh)
-        val ry = feetRy(afh) + feetRy(b.fh)
+                  b: Feet, scale: Float = 1f): Float {
+        val rx = (feetRx(afh) + feetRx(b.fh)) * scale
+        val ry = (feetRy(afh) + feetRy(b.fh)) * scale
         val dyN = ((ay - b.feetY) / ry).coerceIn(-1f, 1f)
         val half = rx * kotlin.math.sqrt(1f - dyN * dyN)
         return if (ax < b.cx) b.cx - half else b.cx + half

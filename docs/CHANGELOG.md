@@ -1,5 +1,264 @@
 # Changelog — South Park: Living Town
 
+## Status — v0.18.0d (RESTRUCTURE PHASE 2: CANONICAL — sorted measurement, set bounds, replay pins; versionCode 130)
+
+Restructure Order Phase 2 (defect D2; Part 8.3): the lifetime
+soak's lifeText peak bound moved 293–318 across identical trees
+because the measurement was a raw count over a map whose
+contents at the peak ride a micro-trajectory sensitive to
+compiled-artifact hash ordering — and at v0.16.0d the bound was
+recalibrated for that measurement reason alone, the exact
+treadmill D2 names. This build changes NO game code (nothing
+under src/ but Version.kt); it canonicalizes the measurement
+in the suite and retires the raw count for good.
+
+- THE CANON (CanonKeys, in tools/SmokeTest.kt): a raw lifeText
+  key reduces to its canonical TEMPLATE — day/index stamps
+  collapse to #, date stamps after '@' collapse to @#, and any
+  segment naming a registry member (cast name, location,
+  household, climax chain, secret, vote question, season)
+  collapses to *. A template is the key's SHAPE: a property of
+  the code that writes keys, not of any map's iteration order.
+  Keys are sorted before measuring, per Part 8.3.
+- THE NEW BOUNDS (functions of the canonical key set, struck
+  from the measured years): the lifetime soak's year produced
+  837 distinct raw keys in exactly 74 templates — the same 74
+  across three independent trajectories whose raw unions and
+  peaks all differ (raw peak 302/302/304 locally, 314 in the
+  Phase 1 environment; the template set and the 72-family set
+  stood still). The soak now pins: (1) the year's templates
+  against the pinned required/allowed sets (below); (2) each
+  template's peak daily count fits its STRUCTURAL ceiling
+  (CanonKeys.ceilingOf — registry arithmetic, computed from
+  the template's shape and the live census: literal shapes
+  stand at 1; a shape ranging over a registry stands at the
+  census, which the registries sit under — trip:* is the
+  binding case, one key per agent en route, observed peak
+  exactly 98 = the cast; pair shapes stand at one live topic
+  per agent; @-stamped shapes at 26, two per climax chain;
+  #-stamped calendar records at 8, two years × four seasons);
+  (3) the peak day fits the ceiling the canonical set itself
+  derives (the sum of the allowed shapes' ceilings). The
+  canonical peak day is chosen order-free: largest size, ties
+  to the lexicographically smallest sorted key list. The set
+  pin is two-sided: measured ⊆ ALLOWED (74 required shapes +
+  `snowman`, a winter key that fired in one sampled lifetime
+  year and one sampled Q10 year, never both strikes' first
+  samples) and REQUIRED ⊆ measured.
+- WHY CEILINGS, NOT A SAMPLED PROFILE: this phase's first
+  strike pinned each shape's peak as the maximum over the
+  sampled years — and the sampled years kept widening it
+  (pairTopic:*|* read 10, then 12, then 16 live topics;
+  commNear:* 11, then 12). A sampled maximum is the raw count
+  one level down: same tail, same treadmill. The sampled
+  profile constants were removed whole during this build
+  (their absence is suite-pinned) and replaced by the
+  structural ceilings above, which no trajectory can widen —
+  they move only when the census or the content does, in the
+  open. What D2 forbids — quietly re-striking a bound later
+  to make a red run green — is exactly what did not happen:
+  every strike is a named log in this build's tmp dir.
+- SUPERSESSION: the raw-count checks are removed whole, with
+  SUPERSESSION comments at both sites and suite pins that the
+  retired literals never return. The bound will never be
+  recalibrated for a measurement reason again: a failure now
+  names the missing/unexpected template or the offending
+  shape's count, which is a content diagnosis, not a number
+  to bump.
+- THE AUDIT (every soak measurement site, per Part 8.3):
+  (a) the lifetime soak's lifeText peak — D2 itself, fixed
+  above. (b) The Q10 audit soak measured the same map the same
+  way (peak 89 in both environments read, far under its flat
+  bound) — canonicalized the same way against its own pinned
+  sets: 136–137 raw keys in 50 required templates plus one
+  allowed shape, `snowman`, a winter key that fires only in
+  some trajectories (absent from the first sampled year,
+  present in the next); its shapes answer to the same
+  structural ceilings. Q10's set
+  pin is therefore two-sided the way the year's evidence
+  supports: measured ⊆ allowed (no new shape), required ⊆
+  measured (no shape gone silent).
+  (c) Everything else the soaks measure is a LIST size under a
+  module-enforced cap (events, town log, episodes, the album's
+  unprotected shelf, errands, commissions, phone stores) —
+  cap assertions, stable by construction, not map iteration;
+  left as they stand. (d) The serialized-save size check rides
+  the same trajectory wobble (502,138 vs 503,059 chars observed
+  on one tree) but against a half-megabyte ceiling with ~10 KB
+  of headroom in the worst reading; it is a size, not an
+  iteration-order measurement, and has never needed
+  recalibration — noted, left alone.
+- REPLAY PINS (sectionV0180d): one fixed key set inserted into
+  maps in three orders (as-is, reversed, fixed-seed shuffle)
+  and read back out of a HashMap must give identical canonical
+  sorted keys, template sets and profiles; the canonical peak
+  choice is pinned on fabricated ties; the template canon is
+  pinned shape by shape (18 shapes).
+- BASELINE NOTE: the untouched tree reproduced at 110,497
+  checks / 0 failures in this build environment (suite-baseline
+  log in the build's tmp dir); the Phase 1 final log on the
+  same tree read 110,498 in its environment. The ±1 is one
+  trajectory-dependent loop check somewhere in the older
+  sections — the same measurement-noise class as D2, now on
+  the record; 0 failures in both.
+- ACCEPTANCE (the phase's own test): the soak bound is stable
+  across THREE recompiles of the identical tree — after the
+  three strike runs (suite-accept-1: pairTopic's wider year
+  and Q10's snowman; suite-strike-2: the lifetime year's own
+  snowman; suite-strike-3: pairTopic at 16 and commNear at
+  12, the evidence that retired sampled maxima for structural
+  ceilings), three fresh full-suite runs of the final tree
+  (suite-verify-1/2/3) pass against the final bounds at
+  110,538 checks, 0 failures each — the raw peaks underneath
+  wobbled 320/304/303 and the unions 848/841/838 keys, while
+  the canonical lines (74–75 templates inside the pinned
+  sets, derived ceilings 2223 lifetime / 902 Q10) stood
+  identical. The Phase 1 golden gate still passes 155/155
+  against the Phase 1 baseline, unstruck: zero game-behavior
+  change, proven in pixels as well as in checks.
+
+## Status — v0.18.0c (RESTRUCTURE PHASE 1: SIGHT — the golden-image harness; versionCode 129)
+
+Restructure Order Phase 1 (defect D22): the mirror harness
+shot captures but nothing diffed them, so verification was
+blind to pixel drift — Phase 0 proved it, when two runs on
+an IDENTICAL tree differed by 4.6–12.0% of pixels (wall-clock
+RNG seed, real-time traffic/bus, camera easing, the post-pass
+boil). This build changes NO game behaviour; it gives the
+project eyes.
+
+- THE DETERMINISM AUDIT (every source found, every one
+  pinned): the Engine's master RNG was seeded from
+  System.currentTimeMillis() — the golden harness constructs
+  Engine(GOLDEN_SEED) instead. The mirror ticker advanced
+  GameView.tick a scheduling-dependent number of times during
+  captures — in golden mode Capture detaches the view the
+  instant its world exists and resets tick to 0, so traffic,
+  the bus and every tick-reading system sit at their canonical
+  origin. The camera settles because a detached view has no
+  ticker: fitted pans are placed directly, and the harness
+  parks at pan 0.5 for every target. Fiction is off, weather
+  pinned "sunny", the date is the harness's fresh-save Oct 1
+  2026, and scene clocks are staged per location (BusStop
+  07:50 so the bus is at its stop boarded; Elementary 10:00
+  so the school reads in class; everything else 12:15).
+- THE ONE GAME-SIDE SEAM: 25 wall-clock reads across
+  GameView/SceneArt/InteriorArt (gait phases, the traffic
+  sweep, the boil phase, shimmers, flickers) now route
+  through RenderClock.nowMs() in PaperCut.kt. The seam
+  defaults unset — the shipped game reads
+  System.currentTimeMillis() exactly as before — and suite
+  sectionV0180c pins that no file under src/ ever assigns it.
+  Only the mirror freezes it, at a fixed millisecond whose
+  boilPhase is 1 (a boiled frame, as shipped: prefs default
+  boil ON, and the golden data dir is fresh every run).
+- THE GATE: `tools/mirror/capture.sh --golden [check|update]`
+  renders all 155 targets — 27 exteriors + 27 interiors at
+  720x1280 plus the 101 reference sheets — into SHA-256
+  hashes over decoded pixels, whole-frame and per-region
+  (4x4 grid). The baseline lives in tools/golden/hashes.tsv
+  with a per-target drift allowance, in regions. Measured
+  result: the pinned pipeline is BIT-EXACT — every allowance
+  is 0. Two consecutive check runs on the untouched tree:
+  155/155 ok, zero drifted regions, twice.
+- THE PROOFS: (a) two consecutive golden runs, identical
+  verdicts, zero over-threshold regions. (b) A deliberate
+  ~1-px nudge — Stan's measured head share 0.653 -> 0.654
+  in KidArt — failed the gate on exactly the affected
+  targets: sheet:stan-games-style-sheet (14 regions),
+  sheet:contact-sheet (1 region), scene:Elementary:in
+  (4 regions, Stan in class) — and nothing else. (c) After
+  the revert, the gate passes again against the stored
+  baseline (exit 0).
+- WHAT THE GATE DOES NOT PROMISE: it sees staged scenes at
+  staged clocks. Gameplay dynamics between the staged
+  instants, and anything outside the 720x1280 frame, remain
+  the suite's and the playtest's business. The suite pins
+  the baseline's shape (target set derived from LOCATIONS +
+  KidArt.SHEETS, 16 region hashes per row, all allowances 0);
+  re-striking the baseline is `capture.sh --golden update`,
+  a deliberate act, never a default.
+
+Suite: 110,498 checks, 0 failures (SMOKE OK) — baseline
+110,481 plus sectionV0180c's 17 pins (the seam's inertness,
+the harness wiring, the baseline contract). APK:
+southpark-town.apk, 4,235,898 B, versionCode 129 /
+versionName 0.18.0c (aapt2 badging verified); signer SHA-256
+a9997c1e73d8b38ab5e099b5cbb6c17ac0a9347c67c37399f3c6011562826ba6
+(unchanged); lorebook md5
+acff1c04e84dfd583dbc5b2e20ed50b5 (unchanged, verified in the
+APK's assets). Linux mirror refreshed
+(out/south-park-town-v0180c-linux), selftest OK.
+
+## Status — v0.18.0b (the PASS-BY build; versionCode 128)
+
+Lucky, playing v0.17.0b (Oct 24, 19:13 CDT): "please allow
+characters to pass by each other so you don't get trapped in
+crowds." v0.17.0b's feet-ellipse collision stopped the player
+at the FULL ellipse edge, so a dense crowd tiled into a wall.
+This build makes the feet two zones and adds the pass-by —
+without moving a single cast member:
+
+- WHICH PAIRS COLLIDED (measured first, fixed precisely):
+  only player-vs-anything ever blocked — stepClamped clamps
+  the player alone, against crowd feet and travelers. The
+  other pairs never collided at all: traveler-vs-traveler
+  and traveler-vs-standing pass freely (travel poses are
+  pure functions of trip records — travelers interpenetrate
+  at crossings, they never block), and LivingTown wanderers
+  are reach-capped at 0.30 of slot pitch so neighbours
+  never meet head-on. No machinery was built for pairs
+  that already pass.
+- TWO-ZONE FEET: the hard CORE is the feet ellipse at
+  FigureCompose.FEET_CORE_SCALE (0.5) — it still stops
+  you, with 0.17.0b's slide and pressed-stop, at the core
+  edge. The SHELL between core and full edge may be
+  crossed at PaperWalk.SQUEEZE_SPEED_FACTOR (0.45) of
+  walk speed, gait phase slowed by the same factor, so a
+  squeeze reads as a squeeze. Any standing crowd or a
+  doorway tiled with figures is traversable end-to-end —
+  the player can never be trapped.
+- THE PRESS RULES ARE UNCHANGED WHERE THEY SPEAK: the
+  arrival snap and the tap-target contact still resolve
+  at the FULL feet edge, first-toucher-first; talk and
+  interaction ranges are exactly 0.17.0b's — squeezing is
+  movement, not a new interaction range. Standing figures
+  are never displaced: the 0.17.0b byte-identical crowd
+  pin stands UNMODIFIED, and the one stop pin the zones
+  supersede (rest at the FULL edge) now rests at the CORE
+  edge under an explicit SUPERSESSION note in
+  sectionV0170b.
+- HEAD-ON PASS-BY (the sidle): pressed against a figure
+  who is himself walking (Feet now carries `walking`;
+  GameView publishes travelers' feet with it) while the
+  slide buys less than half a stride, the walker takes
+  ONE gait step sideways in the band — keep-right by
+  facing first, the other side if that one is walled —
+  sized as one stride of ground-plane feet travel and
+  landing only where his hard core clears everyone.
+  Nobody is teleported, re-dealt, or position-rewritten
+  by a draw layer; a standing figure is never sidled
+  past and never moved. (A first cut sized the sidle by
+  the route's band-weight; a head-on pair ground in a
+  limit cycle around the meeting point. The suite's
+  head-on sim caught it; the ground-plane stride is the
+  fix.)
+- The draw yield reads the core too: a player standing in
+  a lawful mid-squeeze overlap is no longer shifted by
+  the 0.17.0b sprite yield.
+- Also: the README Build line is corrected — versions
+  bump in Version.kt (the single source since Phase 0),
+  not via env vars; and tools/mirror gained a --walk QA
+  staging option, used for this build's lived captures.
+
+Suite: 110,481 checks, 0 failures (sectionV0180b: zone
+constants + scaled geometry, lone-figure core stop,
+exact-factor squeeze, max-density crowd traversal,
+doorway tiled with standing figures crossed end-to-end,
+head-on two-walker pass-by with ground-plane continuity).
+
+Next: Phase 1 (Sight).
+
 ## Status — v0.18.0a
 
 PHASE 0 — BEDROCK (versionCode 127). The Restructure

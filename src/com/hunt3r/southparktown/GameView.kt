@@ -60,7 +60,7 @@ class GameView @JvmOverloads constructor(
     private fun boilOffset(seed: Long): Pair<Float, Float> {
         if (!prefs.boilEnabled()) return 0f to 0f
         val o = PaperCut.boilOffset(seed,
-            PaperCut.boilPhase(System.currentTimeMillis()))
+            PaperCut.boilPhase(RenderClock.nowMs()))
         return o.x to o.y
     }
 
@@ -170,7 +170,7 @@ class GameView @JvmOverloads constructor(
     fun showBark(name: String, text: String, durMs: Long) {
         barkName = name
         barkText = text
-        barkUntilMs = System.currentTimeMillis() + durMs
+        barkUntilMs = RenderClock.nowMs() + durMs
     }
     var sitting: Boolean = false
     // ---- v0.16.0a (item 17): the player's action-animation
@@ -289,7 +289,7 @@ class GameView @JvmOverloads constructor(
     }
 
     private fun stepPlayerWalk() {
-        val nowMs = System.currentTimeMillis()
+        val nowMs = RenderClock.nowMs()
         if (lastStepMs == 0L) { lastStepMs = nowMs; return }
         val dt = ((nowMs - lastStepMs) / 1000f).coerceIn(0f, 0.2f)
         lastStepMs = nowMs
@@ -637,13 +637,13 @@ class GameView @JvmOverloads constructor(
                 val ay = h * (0.70f + rnd.nextFloat() * 0.22f)
                 val sm = MotionRegistry.forSpecies(a.species)
                 val drift = kotlin.math.sin(
-                    System.currentTimeMillis() / (2600f / sm.gaitHz) +
+                    RenderClock.nowMs() / (2600f / sm.gaitHz) +
                         ci * 1.93f + sm.phase) * worldW * 0.018f
                 val hop = kotlin.math.abs(kotlin.math.sin(
-                    System.currentTimeMillis() / 300f + ci * 2.1f)) *
+                    RenderClock.nowMs() / 300f + ci * 2.1f)) *
                     h * 0.006f * (sm.bobU)
                 val faceLeft = kotlin.math.cos(
-                    System.currentTimeMillis() / (2600f / sm.gaitHz) +
+                    RenderClock.nowMs() / (2600f / sm.gaitHz) +
                         ci * 1.93f + sm.phase) < 0
                 val ax = (baseAx + drift).coerceIn(
                     worldW * 0.04f, worldW * 0.96f)
@@ -889,7 +889,7 @@ class GameView @JvmOverloads constructor(
         // on grass, never in the walk band
         if (loc.id in setOf("BusStop", "MainStreet") &&
             (st.timeMin in 462..497 || st.timeMin in 887..922)) {
-            val sweep = ((System.currentTimeMillis() / 55) % 140) / 140f
+            val sweep = ((RenderClock.nowMs() / 55) % 140) / 140f
             val busW2 = WorldScale.units(WorldScale.BUS_LEN_U, h)
             val bx2 = -worldW * 0.18f + sweep * worldW * 1.36f
             SceneArt.drawBusVehicle(c, bx2, h * 0.958f, busW2, night, true)
@@ -1153,7 +1153,7 @@ class GameView @JvmOverloads constructor(
         val hour = tm / 60
         val night = SceneArt.timeOfDay(tm) == "night"
         val day = st.absDay
-        val millis = System.currentTimeMillis()
+        val millis = RenderClock.nowMs()
         fun glyph(txt: String, x: Float, y: Float, size: Float, color: String = "#ffffff") {
             val p = Paper.textPaint(color, size, bold = true, casual = true)
             p.textAlign = Paint.Align.CENTER
@@ -1639,7 +1639,7 @@ class GameView @JvmOverloads constructor(
         val hour = tm / 60
         val night = SceneArt.timeOfDay(tm) == "night"
         val day = st.absDay
-        val millis = System.currentTimeMillis()
+        val millis = RenderClock.nowMs()
         fun glyph(txt: String, x: Float, y: Float, size: Float, color: String = "#ffffff") {
             val p = Paper.textPaint(color, size, bold = true, casual = true)
             p.textAlign = Paint.Align.CENTER
@@ -3442,7 +3442,7 @@ class GameView @JvmOverloads constructor(
                                    worldW: Float, h: Float) {
         val meal = (st.timeMin / 60) in listOf(7, 8, 12, 17, 18)
         if (!meal || locId !in TownInfo.occupiedHomes) return
-        val millis = System.currentTimeMillis()
+        val millis = RenderClock.nowMs()
         val p = Paper.textPaint("#ffffff", 15f, bold = true, casual = true)
         p.textAlign = Paint.Align.CENTER
         for (i in 0..2) {
@@ -3503,7 +3503,7 @@ class GameView @JvmOverloads constructor(
                 val p = Paper.textPaint("#ffffff", 13f, bold = true, casual = true)
                 p.textAlign = Paint.Align.CENTER
                 val x = if (left) 30f else w - 30f
-                val bob = kotlin.math.sin(System.currentTimeMillis() * 0.003f) * 5f
+                val bob = kotlin.math.sin(RenderClock.nowMs() * 0.003f) * 5f
                 c.drawText("ha!", x, h * 0.40f + bob, p)
                 c.drawText("ha!", x + (if (left) 14f else -14f), h * 0.40f + 20f - bob, p)
                 break
@@ -3571,7 +3571,7 @@ class GameView @JvmOverloads constructor(
         // v0.15.0c: no early return — the player ALWAYS
         // stands in this scene now (drawn below, y-sorted
         // into this same pass), even on an empty street.
-        val now = System.currentTimeMillis()
+        val now = RenderClock.nowMs()
 
         // render list: generated first (background rows), cast in front
         data class Fig(val name: String, val isCast: Boolean, val asleep: Boolean,
@@ -3771,8 +3771,10 @@ class GameView @JvmOverloads constructor(
             FigureCompose.Feet(it.name, it.cx, it.feetY,
                 it.fh)
         } + travelers.map {
+            // v0.18.0b: a traveler is himself WALKING —
+            // the pass-by's sidestep law reads the flag
             FigureCompose.Feet(it.name, it.cx, it.feetY,
-                it.fh)
+                it.fh, walking = true)
         }
         // paint back-to-front by composed feet line (the
         // y-sort PaperScene.depthSorted states), left to
@@ -3805,12 +3807,19 @@ class GameView @JvmOverloads constructor(
             // steps to the ellipse edge himself. No
             // figure's position is ever recomputed for
             // his sake, at any layer.
+            // v0.18.0b: the yield reads the HARD CORE
+            // (FigureCompose.FEET_CORE_SCALE) — a player
+            // standing mid-squeeze, inside a soft shell
+            // but clear of every core, is standing
+            // lawfully and his sprite stays where his
+            // feet are; only a core gets stepped out of.
             var px = pwalk.x * worldW
             for (b in crowdBlockers) {
                 if (FigureCompose.feetTouch(px, playerBaseY,
-                        pfh, b))
+                        pfh, b, FigureCompose.FEET_CORE_SCALE))
                     px = FigureCompose.feetEdgeX(px,
-                        playerBaseY, pfh, b)
+                        playerBaseY, pfh, b,
+                        FigureCompose.FEET_CORE_SCALE)
             }
             // the paper shadow every cut-out stands on
             c.drawOval(RectF(px - pfh * 0.30f, playerBaseY - pfh * 0.030f,
@@ -3951,7 +3960,7 @@ class GameView @JvmOverloads constructor(
             if (prevPhase != null) {
                 val downs = Gait.footDowns(prevPhase, phase)
                 if (downs.isNotEmpty()) {
-                    val nowSfx = System.currentTimeMillis()
+                    val nowSfx = RenderClock.nowMs()
                     if (nowSfx - lastStepSfxMs > 90L) {
                         lastStepSfxMs = nowSfx
                         SoundEngine.footstep(stepSnow, false,
@@ -4516,7 +4525,7 @@ class GameView @JvmOverloads constructor(
             p.textAlign = Paint.Align.CENTER
             c.drawText(txt, x, y, p)
         }
-        val millis2 = System.currentTimeMillis()
+        val millis2 = RenderClock.nowMs()
         for (p in posList) {
             if (p.asleep) continue
             val headY = p.baseY - p.fh
@@ -4613,7 +4622,7 @@ class GameView @JvmOverloads constructor(
         // the top chrome — the no-overlap discipline the rest of
         // the overlay lives by.
         val bName = barkName
-        if (bName != null && System.currentTimeMillis() <= barkUntilMs) {
+        if (bName != null && RenderClock.nowMs() <= barkUntilMs) {
             val bp = posList.firstOrNull { it.name == bName && !it.asleep }
             if (bp != null) {
                 var tSize = 13f * fs

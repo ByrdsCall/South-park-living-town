@@ -81,6 +81,11 @@ object MirrorMain {
             Capture.run(args.drop(1), dataDir, projectDir)
             return
         }
+        if (args.isNotEmpty() && args[0] == "--golden") {
+            System.setProperty("java.awt.headless", "true")
+            Golden.run(args.drop(1), dataDir, projectDir)
+            return
+        }
         if (args.isNotEmpty() && args[0] == "--selftest") {
             selfTestDir = File(args.getOrElse(1) { "selftest" })
             selfTestDir?.mkdirs()

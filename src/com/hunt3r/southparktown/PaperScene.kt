@@ -547,6 +547,13 @@ object PaperWalk {
     /** Arrival radius, in weighted world units. */
     const val ARRIVE_EPS = 0.008f
 
+    /** v0.18.0b: the squeeze stride — inside a feet
+     *  ellipse's soft shell (outside its hard core)
+     *  you move at this fraction of your stride.
+     *  Shouldering past somebody is slower than open
+     *  ground; it is never a stop. */
+    const val SQUEEZE_SPEED_FACTOR = 0.45f
+
     /** An interaction waiting at the end of a walk. Kinds
      *  are GameView's own hit kinds (kid / visitor / exit /
      *  spawn / door / exitdoor / trash / litter / the scene
@@ -634,28 +641,45 @@ object PaperWalk {
             phase = s.phase + move * phasePerFrac) to null
     }
 
-    /** v0.17.0b: [step] with FEET CONTACT. The town's
-     *  one collision law, learned from Lucky's
-     *  playtest ("collision with characters causes
-     *  them to move but it's hitbox is bad"): a cast
-     *  member is NEVER displaced by the player — not
-     *  by the walk, not by the draw. [blockers] are the
-     *  scene's composed feet footprints (FigureCompose
-     *  .Feet, screen px) and they are READ-ONLY here:
-     *  the only position this function may move is the
-     *  player's own. When the step would carry the
-     *  player into a figure's feet ellipse
-     *  (FigureCompose.feetTouch), the player stops ON
-     *  the ellipse's edge: if the figure is the walk's
-     *  own pending target, that IS the arrival (you
-     *  walked up to them — the interaction fires); if
-     *  the step still makes band progress the player
-     *  slides along the edge as his depth pulls him
-     *  clear; if it makes no progress at all, the walk
-     *  ends, pressed to a stop. A step that STARTS
-     *  inside an ellipse (the crowd composed around a
-     *  standing player) is never clamped — he may
-     *  always walk out of a spawn overlap. */
+    /** v0.18.0b: THE PASS-BY (Lucky, Oct 24: "please
+     *  allow characters to pass by each other so you
+     *  don't get trapped in crowds"). The 0.17.0b law
+     *  stands untouched where it speaks: a cast member
+     *  is NEVER displaced by the player, and the
+     *  figure you came for still fires his interaction
+     *  at the FULL feet edge. What changes is everyone
+     *  else: their feet ellipse is now TWO ZONES
+     *  (FigureCompose.FEET_CORE_SCALE).
+     *
+     *  THE SOFT SHELL (core edge to full edge): you
+     *  may be in it, at SQUEEZE_SPEED_FACTOR of your
+     *  stride. Shouldering gently past somebody is
+     *  what crowds are for — a wall of standing
+     *  figures stays traversable end-to-end through
+     *  the gaps between their cores, and a doorway
+     *  blocked by a standing figure is passed around
+     *  his shoulder, never through his feet.
+     *
+     *  THE HARD CORE: still a wall. You stop on its
+     *  edge and slide along it as your depth pulls
+     *  you clear; pressed flat against a STANDING
+     *  figure the walk ends, exactly as 0.17.0b
+     *  taught — a person is not a doorway.
+     *
+     *  Two walkers meeting head-on get the third
+     *  rule: pressed core-to-core against a figure
+     *  who is himself WALKING (Feet.walking), you do
+     *  not die against him — you SIDLE: one gait step
+     *  sideways in the band, keeping right, and walk
+     *  past. The sidle is your own step — position
+     *  moves at most one stride and the phase reads
+     *  the distance — never a re-deal; and nobody is
+     *  ever moved but you.
+     *
+     *  A step that STARTS deep inside a zone (the
+     *  crowd composed around a standing player) keeps
+     *  the walk-out freedom: never clamped, never
+     *  squeezed. Dealt ground is not a collision. */
     fun stepClamped(s: State, dtSec: Float,
                     phasePerFrac: Float = 22f,
                     blockers: List<FigureCompose.Feet>,
@@ -671,18 +695,27 @@ object PaperWalk {
         val sFeetY = WalkBand.feetY(s.band, h, inside)
         val sFh = fhBase * WalkBand.depthScale(s.band)
         val sPx = s.x * worldW
+        fun coreD2(x: Float, y: Float, fh: Float,
+                   b: FigureCompose.Feet): Float =
+            FigureCompose.feetDist2(x, y, fh, b,
+                FigureCompose.FEET_CORE_SCALE)
+        // deep = dealt ground, the 0.17.0b exemption,
+        // measured per zone now
+        fun deepFull(b: FigureCompose.Feet): Boolean =
+            FigureCompose.feetDist2(sPx, sFeetY, sFh, b) <
+                0.90f
+        fun deepCore(b: FigureCompose.Feet): Boolean =
+            coreD2(sPx, sFeetY, sFh, b) < 0.90f
+        // ---- 0.17.0b's law, untouched: the arrival
+        // snap and the figure you came for resolve at
+        // the FULL feet edge, first toucher first —
+        // the first non-target contact ends this pass
+        // and hands over to the zone law, exactly as
+        // the old clamp took the first toucher.
         for (b in blockers) {
             if (!FigureCompose.feetTouch(px, pFeetY, pFh, b))
                 continue
-            // already DEEP inside this one before the step:
-            // a spawn overlap, not a collision — walk out.
-            // (Deep = dist2 < 0.90: a step that merely rests
-            // ON the edge, dist2 ≈ 1, must still clamp, or
-            // the resting player walks through next step —
-            // the float-exact edge is not "inside".)
-            if (FigureCompose.feetDist2(sPx, sFeetY, sFh, b)
-                < 0.90f)
-                continue
+            if (deepFull(b)) continue
             val edge = FigureCompose.feetEdgeX(px, pFeetY,
                 pFh, b) / worldW
             if (fired != null) {
@@ -698,22 +731,143 @@ object PaperWalk {
                     facing = ns.facing, phase = ns.phase,
                     walking = false, pending = null) to s.pending
             }
+            break
+        }
+        // an arrival on open ground is final — whatever
+        // feet it landed in are the draw yield's
+        // business, as they were in 0.17.0b
+        if (!ns.walking) return ns to fired
+        // ---- the zone law: the hard core binds first
+        var coreHit: FigureCompose.Feet? = null
+        var coreHitD2 = Float.MAX_VALUE
+        var softHit = false
+        for (b in blockers) {
+            // your target's ground is the edge law
+            // above, never a wall to squeeze against
+            if (s.pending != null && s.pending.id == b.name)
+                continue
+            val d2 = coreD2(px, pFeetY, pFh, b)
+            if (d2 < 1f && !deepCore(b)) {
+                if (d2 < coreHitD2) {
+                    coreHitD2 = d2; coreHit = b
+                }
+                continue
+            }
+            if (!softHit &&
+                FigureCompose.feetTouch(px, pFeetY, pFh, b) &&
+                !deepCore(b))
+                softHit = true
+        }
+        val hit = coreHit
+        if (hit != null) {
+            val edge = FigureCompose.feetEdgeX(px, pFeetY,
+                pFh, hit, FigureCompose.FEET_CORE_SCALE) /
+                worldW
             val noProgress =
                 kotlin.math.abs(edge - s.x) < 0.0005f &&
                     kotlin.math.abs(ns.band - s.band) < 0.0005f
-            return if (noProgress) {
-                // pressed to a full stop against a figure
-                // who isn't the target: the walk is over
-                s.copy(x = edge, walking = false,
-                    pending = null) to null
-            } else {
-                // stopped at the edge for now; the walk
-                // (and its order) survives — band progress
-                // slides the player along and clear
-                ns.copy(x = edge) to null
+            if (hit.walking) {
+                // HEAD-ON (v0.18.0b): pressed against a
+                // fellow walker. When the slide buys less
+                // than half a stride, the walker SIDLES —
+                // one gait step sideways in the band (see
+                // sidestep) — instead of grinding along
+                // the core while his own route pulls him
+                // back to the meeting line. Either way
+                // the walk stays ALIVE: he is moving, so
+                // the geometry cannot hold still long
+                // enough to trap you.
+                if (noProgress ||
+                    kotlin.math.abs(edge - s.x) <
+                        0.5f * SPEED * dtSec)
+                    sidestep(s, dtSec, phasePerFrac,
+                        blockers, worldW, h, inside,
+                        fhBase)?.let { return it to null }
+                return ns.copy(x = edge) to null
             }
+            if (!noProgress) {
+                // stopped at the core edge for now; the
+                // walk (and its order) survives — band
+                // progress slides the player along the
+                // core and clear
+                return ns.copy(x = edge) to null
+            }
+            // pressed to a full stop against a figure
+            // who isn't the target: the walk is over —
+            // 0.17.0b's rest, at the core edge now
+            return s.copy(x = edge, walking = false,
+                pending = null) to null
+        }
+        if (softHit) {
+            // THE SQUEEZE: the shell lets you through
+            // at a reduced stride. Position AND phase
+            // read the shortened distance, so the gait
+            // stays honest — no root motion, no slide.
+            val f = SQUEEZE_SPEED_FACTOR
+            return s.copy(
+                x = s.x + (ns.x - s.x) * f,
+                band = s.band + (ns.band - s.band) * f,
+                facing = ns.facing,
+                phase = s.phase + (ns.phase - s.phase) * f,
+                walking = true,
+                pending = s.pending) to null
         }
         return ns to fired
+    }
+
+    /** The sidle: one gait step purely in the band —
+     *  keeping right for the walker's facing first, the
+     *  other side if the first is walled. It lands only
+     *  where the new ground is clear of every hard core
+     *  (a core the step STARTS deep inside is dealt
+     *  ground, not a wall). Null when neither side is
+     *  open. The step spends exactly one stride of
+     *  travel budget, sideways. */
+    private fun sidestep(s: State, dtSec: Float,
+                         phasePerFrac: Float,
+                         blockers: List<FigureCompose.Feet>,
+                         worldW: Float, h: Float,
+                         inside: Boolean, fhBase: Float):
+        State? {
+        // the stride measured in the GROUND PLANE:
+        // one step of feet travel, spent sideways. The
+        // band delta is whatever the local band slope
+        // makes of that distance — probed off the band
+        // mapping itself, so indoors and out agree.
+        // (Sized by the route's band-weight instead, a
+        // sidle came out a fraction of the core's depth
+        // and a head-on pair ground in a limit cycle
+        // around the meeting point — the suite's
+        // head-on sim caught it.)
+        val stridePx = SPEED * dtSec * worldW
+        if (stridePx <= 0f) return null
+        val sFeetY = WalkBand.feetY(s.band, h, inside)
+        val slope = (WalkBand.feetY(s.band + 0.01f, h,
+            inside) - sFeetY) / 0.01f
+        if (slope <= 0f) return null
+        val stepBand = stridePx / slope
+        val sFh = fhBase * WalkBand.depthScale(s.band)
+        val sPx = s.x * worldW
+        val maxBand = if (inside) 1f else
+            WalkBand.BAND_MAX_OUT
+        val right = if (s.facing >= 0) 1f else -1f
+        for (dir in listOf(right, -right)) {
+            val nb = s.band + dir * stepBand
+            if (nb < 0f || nb > maxBand) continue
+            val nFeetY = WalkBand.feetY(nb, h, inside)
+            val nFh = fhBase * WalkBand.depthScale(nb)
+            val clear = blockers.all { b ->
+                FigureCompose.feetDist2(sPx, nFeetY, nFh,
+                    b, FigureCompose.FEET_CORE_SCALE) >= 1f ||
+                    FigureCompose.feetDist2(sPx, sFeetY,
+                        sFh, b,
+                        FigureCompose.FEET_CORE_SCALE) < 0.90f
+            }
+            if (clear) return s.copy(band = nb,
+                phase = s.phase + SPEED * dtSec *
+                    phasePerFrac)
+        }
+        return null
     }
 }
 

@@ -47,6 +47,26 @@ import kotlin.math.sqrt
 /** One point of a cut contour (canvas units). */
 data class CutPt(val x: Float, val y: Float)
 
+/**
+ * v0.18.0c (Phase 1 — Sight): the render clock seam.
+ *
+ * Every wall-clock read in the view layer (GameView, SceneArt,
+ * InteriorArt — gait and wander phases, the boil cycle, water
+ * shimmer, tree sway, lamp flicker, bark windows) goes through
+ * [nowMs]. In the shipped game [fixedMs] is ALWAYS null and
+ * [nowMs] is exactly `System.currentTimeMillis()` — the seam
+ * changes nothing on device, and the suite pins that nothing
+ * under src/ ever assigns [fixedMs]. The mirror's golden
+ * harness (tools/mirror/Golden.kt) is the only writer: it
+ * freezes the render clock so a staged scene renders the same
+ * pixels on every run, which is what makes golden-image
+ * regression possible at all.
+ */
+object RenderClock {
+    @Volatile var fixedMs: Long? = null
+    fun nowMs(): Long = fixedMs ?: System.currentTimeMillis()
+}
+
 object PaperCut {
 
     // ---------- deterministic hash ----------
