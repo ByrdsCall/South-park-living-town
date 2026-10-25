@@ -2359,8 +2359,13 @@ fun main(args: Array<String>) {
         check(dsSrcA.contains("SoundEngine.blip("),
             "audio: speech bubbles blip per speaker")
         val prefsSrcA = File(root, "src/com/hunt3r/southparktown/Prefs.kt").readText()
-        check(prefsSrcA.contains("\"audio_music\"") && prefsSrcA.contains("\"audio_sfx\"") &&
-            prefsSrcA.contains("\"audio_amb\"") && prefsSrcA.contains("\"audio_muted\""),
+        // SUPERSESSION (v0.18.0e, Phase 3 registry): the audio key
+        // literals moved from Prefs.kt into SaveKeys.kt — Prefs now
+        // names them by const. The strings themselves are unchanged.
+        val saveKeysSrcA = File(root, "src/com/hunt3r/southparktown/SaveKeys.kt").readText()
+        check(saveKeysSrcA.contains("\"audio_music\"") && saveKeysSrcA.contains("\"audio_sfx\"") &&
+            saveKeysSrcA.contains("\"audio_amb\"") && saveKeysSrcA.contains("\"audio_muted\"") &&
+            prefsSrcA.contains("SaveKeys.AUDIO_MUSIC") && prefsSrcA.contains("SaveKeys.AUDIO_MUTED"),
             "audio: settings persist under additive keys")
         val setSrcA = File(root, "src/com/hunt3r/southparktown/SettingsActivity.kt").readText()
         check(setSrcA.contains("SOUND") && setSrcA.contains("AudioChannel.MUSIC") &&
@@ -3482,6 +3487,7 @@ fun main(args: Array<String>) {
     sectionV0180b(root)
     sectionV0180c(root)
     sectionV0180d(root)
+    sectionV0180e(root)
 
     println("== $checks checks, $failures failures ==")
     if (failures > 0) kotlin.system.exitProcess(1)
@@ -9958,7 +9964,11 @@ run {
     check(setSrc.contains("Greeting barks") && setSrc.contains("setBarksEnabled"),
         "wiring: Settings carries the barks toggle")
     val prefsSrc = File(root, "src/com/hunt3r/southparktown/Prefs.kt").readText()
-    check(prefsSrc.contains("\"audio_barks\"") && prefsSrc.contains("barksEnabled"),
+    // SUPERSESSION (v0.18.0e, Phase 3 registry): the audio_barks
+    // literal moved into SaveKeys.kt; Prefs names it by const.
+    check(File(root, "src/com/hunt3r/southparktown/SaveKeys.kt").readText()
+            .contains("\"audio_barks\"") &&
+        prefsSrc.contains("SaveKeys.AUDIO_BARKS") && prefsSrc.contains("barksEnabled"),
         "wiring: the toggle persists under its one additive key")
 }
 }
@@ -24032,7 +24042,7 @@ private fun sectionV070g(root: String) {
         "v0.7.0g: the README carries this build's changelog entry")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "v0.7.0g: the source tree and its description agree — " +
             "97 Kotlin files (counted $ktCount; the count moved " +
             "with v0.10.0c's Play.kt, v0.10.0d's " +
@@ -28830,7 +28840,7 @@ private fun sectionV080g(root: String) {
         "v0.8.0g: the README carries this build's changelog entry")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "v0.8.0g: the source tree and its description agree — " +
             "97 Kotlin files (the audit added none; the count " +
             "moved later with v0.10.0c's Play.kt, v0.10.0d's " +
@@ -31531,7 +31541,7 @@ private fun sectionV090c(root: String) {
                 "elders as one-line summaries — winners named, " +
                 "a missed year marked missed")
         check(File(root, "src/com/hunt3r/southparktown").listFiles()
-            ?.count { it.name.endsWith(".kt") } == 137,
+            ?.count { it.name.endsWith(".kt") } == 138,
             "fair: the source tree is 110 Kotlin files — Fair.kt " +
                 "joined at v0.9.0c, Darkroom.kt at v0.9.0d, " +
                 "RivalCrew.kt at v0.9.0e, Family.kt at v0.10.0a, " +
@@ -34063,7 +34073,7 @@ private fun sectionV0100g(root: String) {
         "v0.10.0g: the README carries this build's changelog entry")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "v0.10.0g: the source tree and its description agree — " +
             "97 Kotlin files (the audit added none; the count " +
             "moved later with v0.11.0d's CastDataWave6.kt) (counted $ktCount)")
@@ -35897,7 +35907,7 @@ private fun sectionV090g(root: String) {
         "v0.9.0g: the README carries this build's changelog entry")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "v0.9.0g: the source tree and its description agree — " +
             "97 Kotlin files (the audit added none; the count " +
             "moved later with v0.10.0c's Play.kt, v0.10.0d's " +
@@ -39306,7 +39316,7 @@ private fun sectionV0100c(root: String) {
             "src/com/hunt3r/southparktown").listFiles()
             ?.count { it.isFile && it.name.endsWith(".kt") }
             ?: -1
-        check(ktCount == 137 && readme.contains(
+        check(ktCount == 138 && readme.contains(
             "105 Kotlin files"),
             "play: the tree is 105 Kotlin files — Play.kt at " +
                 "v0.10.0c, GroupChats.kt at v0.10.0d, " +
@@ -40817,7 +40827,7 @@ private fun sectionV0100e(root: String) {
         "src/com/hunt3r/southparktown").listFiles()
         ?.count { it.isFile && it.name.endsWith(".kt") }
         ?: -1
-    check(ktCountE2 == 137 && readmeE2.contains(
+    check(ktCountE2 == 138 && readmeE2.contains(
         "105 Kotlin files"),
         "stand: the tree is 108 Kotlin files — Stand.kt " +
             "at v0.10.0e, Mystery8.kt at v0.10.0f, Garden.kt at v0.11.0b, Sleepovers.kt at v0.11.0c, " +
@@ -40855,7 +40865,7 @@ run {
         "release: the manifest itself carries 83 / 0.11.0c")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "paper: the source tree and its description agree — " +
             "97 Kotlin files (Newspaper.kt joined at v0.11.0a, Garden.kt at v0.11.0b, Sleepovers.kt at v0.11.0c) " +
             "(counted $ktCount)")
@@ -41225,7 +41235,7 @@ run {
         "release: the manifest itself carries 83 / 0.11.0c")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "garden: the source tree and its description agree — " +
             "97 Kotlin files (Garden.kt was v0.11.0b's addition; Sleepovers.kt is v0.11.0c's) " +
             "(counted $ktCount)")
@@ -41786,7 +41796,7 @@ run {
         "release: the manifest itself carries 83 / 0.11.0c")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "sleepovers: the source tree and its description agree — " +
             "97 Kotlin files (Sleepovers.kt is the one addition) " +
             "(counted $ktCount)")
@@ -42919,7 +42929,7 @@ run {
         "release: the manifest itself carries 85 / 0.11.0e")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "carnival: the source tree and its description agree — " +
             "97 Kotlin files (Carnival.kt is the one addition) " +
             "(counted $ktCount)")
@@ -44189,7 +44199,7 @@ check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
     "release: the manifest itself carries 87 / 0.11.0g")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 137 && readme.contains("105 Kotlin files"),
+check(ktCount == 138 && readme.contains("105 Kotlin files"),
     "v0.11.0g: the source tree and its description agree — " +
         "99 Kotlin files (the audit added none) (counted $ktCount)")
 
@@ -45842,7 +45852,7 @@ run {
         "release: the manifest itself carries 89 / 0.12.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "paper grows: no new module — the tree stood at 98 " +
             "Kotlin files (counted $ktCount)")
 
@@ -46389,7 +46399,7 @@ run {
         "release: the manifest itself carries 89 / 0.12.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "counters: one new module (Shop.kt) — the tree is at " +
             "99 Kotlin files (counted $ktCount)")
 
@@ -46690,7 +46700,7 @@ run {
         "release: the manifest itself carries 91 / 0.12.0d")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "birthdays: one new module (Birthdays.kt) — the tree is at " +
             "105 Kotlin files (counted $ktCount)")
 
@@ -47348,7 +47358,7 @@ run {
         "release: the manifest itself carries 91 / 0.12.0d")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "sleepwear: one new module (Sleepwear.kt) — the tree is at " +
             "105 Kotlin files (counted $ktCount)")
 
@@ -47774,7 +47784,7 @@ run {
         "release: the manifest itself carries 92 / 0.12.0e")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "attic: one new module (Attic.kt) — the tree is at " +
             "105 Kotlin files (counted $ktCount)")
 
@@ -48739,7 +48749,7 @@ check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
     "release: the manifest itself carries 94 / 0.12.0g")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 137 && readme.contains("105 Kotlin files"),
+check(ktCount == 138 && readme.contains("105 Kotlin files"),
     "v0.12.0g: the source tree and its description agree — " +
         "105 Kotlin files (the audit added none) (counted $ktCount)")
 
@@ -50751,7 +50761,7 @@ private fun sectionV0130a(root: String) {
         "release: the manifest itself carries 95 / 0.13.0a")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "v0.13.0a: no new module — the page and the barks live " +
             "in Family.kt/Barks.kt; the tree stands at 103 " +
             "Kotlin files (counted $ktCount)")
@@ -51215,7 +51225,7 @@ private fun sectionV0130b(root: String) {
         "v0.13.0b: the README carries this build's status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "v0.13.0b: one new module (Dance.kt) — the tree stands " +
             "at 105 Kotlin files (found $ktCount)")
 
@@ -51929,7 +51939,7 @@ private fun sectionV0130c(root: String) {
         "v0.13.0c: the README carries this build's status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 137 && readme.contains("105 Kotlin files"),
+    check(ktCount == 138 && readme.contains("105 Kotlin files"),
         "v0.13.0c: one new module (Talent.kt) — the tree " +
             "stands at 105 Kotlin files (found $ktCount)")
 
@@ -52958,7 +52968,7 @@ private fun sectionV0130d(root: String) {
         "v0.13.0d: the README carries this build's status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 137 && readme.contains("106 Kotlin files"),
+    check(ktCount == 138 && readme.contains("106 Kotlin files"),
         "v0.13.0d: one new module (Parade.kt) — the tree " +
             "stands at 106 Kotlin files (found $ktCount)")
 
@@ -53868,7 +53878,7 @@ private fun sectionV0130e(root: String) {
             "entry and status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 137 && readme.contains("107 Kotlin files"),
+    check(ktCount == 138 && readme.contains("107 Kotlin files"),
         "v0.13.0e: one new module (PenPals.kt) — the tree " +
             "stands at 107 Kotlin files (found $ktCount)")
 
@@ -55334,7 +55344,7 @@ check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
     "release: the manifest itself carries 101 / 0.13.0g")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 137 && readme.contains("108 Kotlin files"),
+check(ktCount == 138 && readme.contains("108 Kotlin files"),
     "v0.13.0g: the source tree and its description agree — " +
         "108 Kotlin files (the audit added none) (counted $ktCount)")
 
@@ -56952,7 +56962,7 @@ run {
         "release: the manifest itself carries 103 / 0.14.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("108 Kotlin files"),
+    check(ktCount == 138 && readme.contains("108 Kotlin files"),
         "reflections: no new module — two pure readers in " +
             "Sleepwear/Heroes and two drawing calls in GameView; " +
             "the tree stays at 108 Kotlin files (counted $ktCount)")
@@ -57273,7 +57283,7 @@ check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
     "release: the manifest itself carries 104 / 0.14.0c")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 137 && readme.contains("110 Kotlin files"),
+check(ktCount == 138 && readme.contains("110 Kotlin files"),
     "v0.14.0c: the source tree and its description agree — " +
         "110 Kotlin files (Festival.kt joined) (counted $ktCount)")
 val festSrc = File(root,
@@ -57944,7 +57954,7 @@ run {
         "release: the manifest itself carries 103 / 0.14.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("109 Kotlin files"),
+    check(ktCount == 138 && readme.contains("109 Kotlin files"),
         "trips: one new module (FieldTrip.kt) — the tree " +
             "stands at 109 Kotlin files (counted $ktCount)")
 }
@@ -58481,7 +58491,7 @@ check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
     "release: the manifest itself carries 105 / 0.14.0d")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 137 && readme.contains("111 Kotlin files"),
+check(ktCount == 138 && readme.contains("111 Kotlin files"),
     "v0.14.0d: the source tree and its description agree — " +
         "111 Kotlin files (PlayerBirthday.kt joined) (counted $ktCount)")
 val pbSrc = File(root,
@@ -59146,7 +59156,7 @@ check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
     "release: the manifest itself carries 106 / 0.14.0e")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 137 && readme.contains("112 Kotlin files"),
+check(ktCount == 138 && readme.contains("112 Kotlin files"),
     "v0.14.0e: the source tree and its description agree — " +
         "112 Kotlin files (Clubhouse.kt joined) (counted $ktCount)")
 val clubSrc = File(root,
@@ -60349,7 +60359,7 @@ run {
         "src/com/hunt3r/southparktown")
         .listFiles()?.count {
             it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137,
+    check(ktCount == 138,
         "release: polish adds no module — the tree " +
             "stands at 113 Kotlin files (counted $ktCount)")
 }
@@ -62328,7 +62338,7 @@ run {
         "preview: the manifest itself carries 110 / 0.15.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137 && readme.contains("114 Kotlin files"),
+    check(ktCount == 138 && readme.contains("114 Kotlin files"),
         "preview: one new module (LiveLook.kt) — the tree " +
             "stands at 114 Kotlin files (counted $ktCount)")
     val llSrc = File(root,
@@ -62694,7 +62704,7 @@ private fun sectionV0150b(root: String) {
             "changelog entry and status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 137 && readme.contains("114 Kotlin files"),
+    check(ktCount == 138 && readme.contains("114 Kotlin files"),
         "return trip: no new module — PenPals.kt grows " +
             "the season; the tree stands at 114 Kotlin " +
             "files (found $ktCount)")
@@ -64032,7 +64042,7 @@ check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
     "release: the manifest itself carries 114 / 0.15.0f")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 137,
+check(ktCount == 138,
     "v0.15.0f: the source tree holds 119 Kotlin files " +
         "(Gallery.kt joined) (counted $ktCount)")
 val galSrc = File(root,
@@ -64796,7 +64806,7 @@ check(manifestG.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
     "release: the manifest itself carries 115 / 0.15.0g")
 val ktCountG = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCountG == 137,
+check(ktCountG == 138,
     "v0.15.0g: the source tree holds 121 Kotlin files " +
         "(CastHomes.kt + FigureCompose.kt joined) (counted $ktCountG)")
 val gvG = File(root,
@@ -65372,7 +65382,7 @@ check(manifestSrcH.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &
     "release: the manifest itself carries 116 / 0.15.0h")
 val ktCountH = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCountH == 137,
+check(ktCountH == 138,
     "v0.15.0h: the source tree holds 122 Kotlin files " +
         "(Apprenticeships.kt joined) (counted $ktCountH)")
 val apprSrc = File(root,
@@ -65913,7 +65923,7 @@ check(manifestSrcI.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &
     "release: the manifest itself carries 117 / 0.15.0i")
 val ktCountI = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCountI == 137,
+check(ktCountI == 138,
     "v0.15.0i: no new module — the work rides inside " +
         "Birthdays, Phone, Engine, Newspaper and " +
         "PlayerBirthday (counted $ktCountI)")
@@ -67509,7 +67519,7 @@ run {
         "src/com/hunt3r/southparktown")
         .listFiles()?.count {
             it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 137,
+    check(ktCount == 138,
         "release: polish adds no module — the tree " +
             "stands at 123 Kotlin files (counted $ktCount)")
 }
@@ -68675,8 +68685,13 @@ run {
         "item 13: the game-clock rule stands as data — " +
             "schedules read GameState.timeMin/absDay, and " +
             "real-time sync defaults OFF")
+    // SUPERSESSION (v0.18.0e, Phase 3): the "realtime_sync"
+    // literal moved into the SaveKeys registry; Prefs names the
+    // key by const. The registry entry itself is pinned by
+    // sectionV0180e. The assertion — persisted default OFF, in
+    // Prefs itself — is unchanged.
     check(java.io.File("src/com/hunt3r/southparktown/Prefs.kt")
-            .readText().contains("getBoolean(\"realtime_sync\", false)"),
+            .readText().contains("getBoolean(SaveKeys.REALTIME_SYNC, false)"),
         "item 13: the persisted realtime_sync default is OFF " +
             "in Prefs itself — the toggle can be flipped by the " +
             "player, but OFF is where the game starts and the " +
@@ -69515,7 +69530,10 @@ private fun sectionV0160d(root: String) {
         gvSrcD.indexOf("drawFigures(c, st, eng"),
         "v0.16.0d lighting: the scene tint paints before the figures — faces exempt by draw order")
     val prefsSrcD = srcD("Prefs.kt")
-    check(prefsSrcD.contains("\"post_boil\"") && prefsSrcD.contains("fun boilEnabled"),
+    // SUPERSESSION (v0.18.0e, Phase 3 registry): the post_boil
+    // literal moved into SaveKeys.kt; Prefs names it by const.
+    check(srcD("SaveKeys.kt").contains("\"post_boil\"") &&
+        prefsSrcD.contains("SaveKeys.POST_BOIL") && prefsSrcD.contains("fun boilEnabled"),
         "v0.16.0d post: the boil toggle is an additive Prefs key, default on")
     check(srcD("SettingsActivity.kt").contains("Paper boil"),
         "v0.16.0d post: Settings carries the boil toggle")
@@ -71017,9 +71035,9 @@ run {
         "v0.18.0a version: the manifest renders Version.kt exactly " +
             "(code ${Version.VERSION_CODE}, name ${Version.VERSION_NAME})")
     val versionSrc = File(srcDir, "Version.kt").readText()
-    check(versionSrc.contains("const val VERSION_CODE: Int = 130") &&
-        versionSrc.contains("const val VERSION_NAME: String = \"0.18.0d\""),
-        "v0.18.0a version: Version.kt carries this build's identity (130 / 0.18.0d)")
+    check(versionSrc.contains("const val VERSION_CODE: Int = 131") &&
+        versionSrc.contains("const val VERSION_NAME: String = \"0.18.0e\""),
+        "v0.18.0a version: Version.kt carries this build's identity (131 / 0.18.0e)")
     val buildSrc = File(root, "build_apk.sh").readText()
     check(buildSrc.contains("Version.kt") &&
         !buildSrc.contains(":-0.1.0}") && !buildSrc.contains(":-1}"),
@@ -71040,13 +71058,24 @@ run {
         "GameView.kt", "DialogueSheet.kt", "UiKit.kt", "MinigameViews.kt",
         "PhotoView.kt", "PocketPalArt.kt",
         "Sound.kt", "LoreLoad.kt", "AndroidSaveStore.kt")
-    check(srcFiles.size == 137,
-        "v0.18.0a purity: the tree stands at 137 Kotlin files (saw ${srcFiles.size})")
+    check(srcFiles.size == 138,
+        "v0.18.0a purity: the tree stands at 138 Kotlin files (saw ${srcFiles.size})")
     val fqPat = Regex("android\\.(app|content|os|view|widget|media|util|text|net|provider)\\.")
     fun codeOnly(text: String): String {
         val noBlock = text.replace(
             Regex("/\\*.*?\\*/", RegexOption.DOT_MATCHES_ALL), " ")
-        val noStrings = noBlock.replace(
+        // v0.18.0e: strip Kotlin char literals BEFORE strings.
+        // A '"' char literal (all over the Json parser in
+        // Prefs.kt) otherwise pairs with the next real string
+        // quote, and the "string" span swallows the code between;
+        // the Phase 3 const migration lengthened one such span to
+        // 3,147 chars and the regex loop overflowed the stack.
+        // Char-aware stripping is strictly more accurate — the
+        // wall's assertions are unchanged, strings are now
+        // stripped as written.
+        val noChars = noBlock.replace(
+            Regex("'(?:\\\\.|[^'\\\\])'"), "''")
+        val noStrings = noChars.replace(
             Regex("\"(?:\\\\.|[^\"\\\\])*\""), "\"\"")
         return noStrings.lines().joinToString("\n") { it.substringBefore("//") }
     }
@@ -71235,8 +71264,8 @@ private fun sectionV0180c(root: String) {
     check(seamAssigners.isEmpty(),
         "v0.18.0c seam: no src file freezes the render clock " +
             "(saw ${seamAssigners.map { it.name }})")
-    check(srcFiles.size == 137,
-        "v0.18.0c seam: the tree still stands at 137 Kotlin files " +
+    check(srcFiles.size == 138,
+        "v0.18.0c seam: the tree still stands at 138 Kotlin files " +
             "\u2014 the seam added none (saw ${srcFiles.size})")
 
     // ---------- (b) the harness wiring ----------
@@ -71310,14 +71339,14 @@ private fun sectionV0180c(root: String) {
 private fun sectionV0180d(root: String) {
     println("== v0.18.0d: canonical \u2014 sorted measurement, set bounds, replay pins (D2) ==")
     val srcDir = File(root, "src/com/hunt3r/southparktown")
-    check(Version.VERSION_CODE == 130 &&
-        Version.VERSION_NAME == "0.18.0d",
+    check(Version.VERSION_CODE == 131 &&
+        Version.VERSION_NAME == "0.18.0e",
         "v0.18.0d version: Version.kt carries this build's " +
-            "identity (130 / 0.18.0d)")
+            "identity (131 / 0.18.0e)")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: -1
-    check(ktCount == 137,
-        "v0.18.0d: the tree still stands at 137 Kotlin files " +
+    check(ktCount == 138,
+        "v0.18.0d: the tree still stands at 138 Kotlin files " +
             "\u2014 Phase 2 changed no game code (saw $ktCount)")
 
     // ---------- the template canon, shape by shape ----------
@@ -71452,7 +71481,11 @@ private fun sectionV0180d(root: String) {
     check(changelogDoc.contains("## Status \u2014 v0.18.0d"),
         "v0.18.0d docs: CHANGELOG carries this build's status")
     val readmeDoc = File(root, "README.md").readText()
-    check(readmeDoc.contains("## Status \u2014 v0.18.0d"),
+    // SUPERSESSION (v0.18.0e): README carries only the CURRENT
+    // status block, so this pin tracks the current build \u2014 the
+    // v0.18.0d block itself lives on in docs/CHANGELOG.md (the
+    // changelogDoc pin above still proves it).
+    check(readmeDoc.contains("## Status \u2014 v0.18.0e"),
         "v0.18.0d docs: README carries this build's status")
     val goldenRows = File(root, "tools/golden/hashes.tsv")
         .readLines()
@@ -71461,4 +71494,750 @@ private fun sectionV0180d(root: String) {
         "v0.18.0d: the Phase 1 golden baseline still stands at " +
             "155 targets (saw ${goldenRows.size}) \u2014 Phase 2 " +
             "re-strikes nothing")
+}
+
+/** v0.18.0e section: Restructure Phase 3 — REGISTRY (Part 8.1,
+ *  defect D11, D12 evidence). SaveKeys.kt declares every
+ *  persisted key once, with one owner; this section pins the
+ *  registry against the living code in both directions (store
+ *  sweep, encode set, decode reads, nested-group walk), then
+ *  runs the DAMAGE CORPUS: one damaged save per failure class,
+ *  each loading to a defined, asserted state and never
+ *  throwing — the salvage and clamp paths of Prefs exercised
+ *  for the first time. */
+@Suppress("UNCHECKED_CAST")
+private fun sectionV0180e(root: String) {
+    println("== v0.18.0e: registry — SaveKeys, the unread-key audit, the damage corpus (D11) ==")
+    val srcDir = File(root, "src/com/hunt3r/southparktown")
+    check(Version.VERSION_CODE == 131 &&
+        Version.VERSION_NAME == "0.18.0e",
+        "v0.18.0e version: Version.kt carries this build's " +
+            "identity (131 / 0.18.0e)")
+    val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
+        ?.size ?: -1
+    check(ktCount == 138,
+        "v0.18.0e: the tree stands at 138 Kotlin files — " +
+            "SaveKeys.kt is the one new file (saw $ktCount)")
+
+    // ---------- the registry's own shape ----------
+    check(SaveKeys.STORE.size == 21 && SaveKeys.DOC.size == 107 &&
+        SaveKeys.STORE_BY_NAME.size == 21 &&
+        SaveKeys.DOC_BY_NAME.size == 107,
+        "v0.18.0e registry: 21 store keys and 107 doc keys, " +
+            "every name declared exactly once (one owner per key)")
+    check(SaveKeys.GROUPS.size == 69 &&
+        SaveKeys.GROUP_BY_PATH.size == 69 &&
+        SaveKeys.GROUPS.count { it.open } == 10,
+        "v0.18.0e registry: 69 nested groups (59 closed, " +
+            "10 open) declared by path")
+    check(listOf(SaveKeys.GAME_STATE, SaveKeys.FRIENDSHIP,
+            SaveKeys.COLLECTED, SaveKeys.LAST_PLAYED_DATE,
+            SaveKeys.SPAWN_DATE, SaveKeys.NPC_MEMORY,
+            SaveKeys.PLAYER_NAME, SaveKeys.PLAYER_APPEARANCE,
+            SaveKeys.CREATOR_PRESETS, SaveKeys.GEMINI_KEY,
+            SaveKeys.LLM_PROVIDER, SaveKeys.GEMINI_MODEL,
+            SaveKeys.OPENROUTER_KEY, SaveKeys.OPENROUTER_MODEL,
+            SaveKeys.REALTIME_SYNC, SaveKeys.AUDIO_MUSIC,
+            SaveKeys.AUDIO_SFX, SaveKeys.AUDIO_AMB,
+            SaveKeys.AUDIO_MUTED, SaveKeys.AUDIO_BARKS,
+            SaveKeys.POST_BOIL) == SaveKeys.STORE.map { it.name },
+        "v0.18.0e registry: the Prefs consts and the STORE " +
+            "registry are the same 21 strings in the same order")
+    check(SaveKeys.STORE.all { it.owner.isNotBlank() } &&
+        SaveKeys.DOC.all { it.owner.isNotBlank() } &&
+        SaveKeys.GROUPS.all { g ->
+            g.owner.isNotBlank() &&
+                g.keys.all { it.owner == g.owner } },
+        "v0.18.0e registry: every key and every group names " +
+            "its one owner, and a group's keys share its owner")
+    val saveKeysSrc = File(srcDir, "SaveKeys.kt").readText()
+    check(!saveKeysSrc.contains("import android"),
+        "v0.18.0e registry: SaveKeys.kt is pure Kotlin below " +
+            "the platform line")
+
+    // ---------- STORE: Prefs speaks only through the registry ----------
+    val prefsSrc = File(srcDir, "Prefs.kt").readText()
+    val accessorLit = Regex(
+        "(getString|getBoolean|getInt|putString|putBoolean|putInt|removeKey)\\(\"").findAll(prefsSrc).count()
+    check(accessorLit == 0,
+        "v0.18.0e registry: no raw store-key literal remains " +
+            "in a Prefs accessor call (saw $accessorLit) — " +
+            "every store key is named by its SaveKeys const")
+
+    class RecStore : SaveStore {
+        val map = mutableMapOf<String, String>()
+        val touched = mutableSetOf<String>()
+        override fun read(key: String): String? {
+            touched += key; return map[key]
+        }
+        override fun write(key: String, value: String) {
+            touched += key; map[key] = value
+        }
+        override fun delete(key: String) {
+            touched += key; map.remove(key)
+        }
+        override fun clear() { map.clear() }
+    }
+    // reset the process-wide write-dedupe caches first (a
+    // scratch wipeAll), so the sweep's writes always land
+    Prefs(RecStore()).wipeAll()
+    val rec = RecStore()
+    val sweep = Prefs(rec)
+    sweep.savePlayer("Registry", DEFAULT_APPEARANCE)
+    sweep.getPlayerName(); sweep.hasPlayer(); sweep.getAppearance()
+    sweep.saveCreatorPreset(0, DEFAULT_APPEARANCE)
+    sweep.getCreatorPresets()
+    sweep.setGeminiKey("k"); sweep.getGeminiKey()
+    sweep.setLlmProvider("openrouter"); sweep.getLlmProvider()
+    sweep.setGeminiModel("m"); sweep.getGeminiModel()
+    sweep.setOpenRouterKey("k"); sweep.getOpenRouterKey()
+    sweep.setOpenRouterModel("m"); sweep.getOpenRouterModel()
+    sweep.activeLlmConfig()
+    sweep.getLastPlayedDate()
+    sweep.setRealtimeSync(true); sweep.isRealtimeSync()
+    sweep.setAudioSettings(AudioSettings(1, 2, 3, false))
+    sweep.audioSettings()
+    sweep.setBarksEnabled(false); sweep.barksEnabled()
+    sweep.setBoilEnabled(false); sweep.boilEnabled()
+    sweep.saveGame(decodeGameState(emptyMap()))
+    sweep.loadGame()
+    sweep.storedSaveFormat()
+    // force the salvage path so the shadow keys are read too
+    rec.map[SaveKeys.GAME_STATE] = "{broken json"
+    sweep.loadGame()
+    NpcMemoryStore.clear()
+    sweep.loadNpcMemory()
+    NpcMemoryStore.deserialize(mapOf("Sweep NPC" to mapOf(
+        "meets" to 1, "points" to 1, "lastMetDay" to "20261004",
+        "lastMetMin" to 1, "topics" to emptyList<String>(),
+        "gifts" to emptyList<String>(), "summary" to "",
+        "eventNote" to "", "likes" to emptyList<String>(),
+        "seenAppearance" to "")))
+    sweep.saveNpcMemory()
+    NpcMemoryStore.clear()
+    sweep.clearGame()
+    check(rec.touched == SaveKeys.STORE.map { it.name }.toSet(),
+        "v0.18.0e registry: a full sweep of the Prefs API " +
+            "touches exactly the 21 registered store keys — " +
+            "no unregistered key is used, no registered key " +
+            "is dead (touched ${rec.touched.size})")
+
+    // ---------- DOC: encode and decode agree with the registry ----------
+    val freshDoc = encodeGameState(decodeGameState(emptyMap()))
+    check(freshDoc.keys == SaveKeys.DOC.map { it.name }.toSet() &&
+        freshDoc.keys.toList() == SaveKeys.DOC.map { it.name },
+        "v0.18.0e registry: encodeGameState emits exactly the " +
+            "107 registered doc keys, in registry order")
+    val docReads = Regex("doc\\[\"([^\"]+)\"\\]")
+        .findAll(prefsSrc).map { it.groupValues[1] }.toSet()
+    check(docReads == SaveKeys.DOC.map { it.name }.toSet(),
+        "v0.18.0e registry: every doc[\"...\"] read in Prefs.kt " +
+            "is registered, and every registered doc key is " +
+            "read somewhere in Prefs.kt (saveFormat is read by " +
+            "inferSaveFormat)")
+
+    // ---------- GROUPS: the nested key census ----------
+    // Fabricate a state with every nested structure populated:
+    // the veteran fixture carries most of them; the rest are
+    // built here from the real record types.
+    val fixtureFile = File(root,
+        "../.tmp-v0180a/pre-split-save-fixture.txt")
+    check(fixtureFile.exists(),
+        "v0.18.0e registry: the pre-split save fixture is on " +
+            "disk for the group walk")
+    if (fixtureFile.exists()) {
+        class FakeStore : SaveStore {
+            val map = mutableMapOf<String, String>()
+            override fun read(key: String): String? = map[key]
+            override fun write(key: String, value: String) {
+                map[key] = value
+            }
+            override fun delete(key: String) { map.remove(key) }
+            override fun clear() { map.clear() }
+        }
+        val fake = FakeStore()
+        fake.write(SaveKeys.GAME_STATE, fixtureFile.readText())
+        val pop = Prefs(fake).loadGame()
+        check(pop != null,
+            "v0.18.0e registry: the veteran fixture loads for " +
+                "the group walk")
+        if (pop != null) {
+            val photo = PhotoRecord(
+                id = "p-registry", dayKey = "20261004",
+                dateLabel = "10/4", timeMin = 600,
+                locId = "KidsPark", inside = false,
+                weatherId = "sunny", appearance = DEFAULT_APPEARANCE,
+                figures = listOf(PhotoFigure(
+                    name = "Stan", kind = "cast", mood = "happy")))
+            pop.photos.add(photo)
+            pop.errands.add(Errand(
+                id = "e-registry", source = Errands.EMERG,
+                asker = "Stan", type = Errands.TYPES.first(),
+                text = "t", hint = "h", dayKey = "20261004",
+                chainId = "c1", chainLink = 1, chainLen = 2,
+                chainFrom = "Stan", chainPrior = listOf("x"),
+                chainRest = listOf(Errand(
+                    id = "e-registry-tail", source = "BOARD",
+                    asker = "Kyle", type = Errands.TYPES.first(),
+                    text = "t", hint = "h")),
+                emergDeadline = 900, emergScenario = "storm"))
+            pop.errandsRecent.add(
+                ErrandDoneNote("e-registry", "20261004", "done"))
+            pop.commissions.add(Commission(
+                id = "c0:0", asker = "Stan",
+                subjects = listOf("Stan"), locId = "KidsPark",
+                text = "t", pay = 5, week = 0))
+            pop.commissionRecent.add(
+                CommissionNote("c0:0", "20261004", "done"))
+            pop.fishLog["rainbow_trout"] = FishRecord(3, 42)
+            pop.showdown["cartman"] = ShowdownRecord(2, 1)
+            pop.yearbooks.add(YearbookVolume(
+                2027, 1, "20270531", 200, false, false, "line",
+                listOf(YearbookEntry(
+                    "best_photo", "Mackey", 9, "note", photo))))
+            val place = FairPlace("a", "b", 1)
+            pop.fairs.add(FairRecord(
+                2026, false, "",
+                photoPlaces = listOf(place),
+                fishPlaces = listOf(place),
+                dunkPlaces = listOf(place),
+                producePlaces = listOf(place)))
+            pop.prints.add(DarkroomPrint(
+                id = "pr-registry", photoId = "p-registry",
+                record = photo, size = "print", madeAbsDay = 3,
+                madeKey = "20261004"))
+            if (pop.galleryShows.isNotEmpty())
+                pop.galleryShows[0].entries = listOf(GalleryEntry(
+                    entrant = "Stan", kind = "photo",
+                    photoId = "p-registry", record = photo))
+
+            val observed = mutableMapOf<String, MutableSet<String>>()
+            val openSeen = mutableSetOf<String>()
+            val problems = mutableListOf<String>()
+            fun walk(v: Any?, path: String) {
+                when (v) {
+                    is Map<*, *> -> {
+                        val g = SaveKeys.GROUP_BY_PATH[path]
+                        val hasContainer = v.values.any {
+                            it is Map<*, *> || it is List<*> }
+                        when {
+                            g != null && g.open -> {
+                                openSeen += path
+                                for ((_, vv) in v)
+                                    walk(vv, path + "{}")
+                            }
+                            !hasContainer -> {
+                                if (g != null && !g.open) {
+                                    observed.getOrPut(path) {
+                                        mutableSetOf()
+                                    } += v.keys.map { it.toString() }
+                                } else if (g != null) {
+                                    openSeen += path
+                                } else if (path.isNotEmpty() &&
+                                    ("." in path || "{" in path ||
+                                        "[" in path)) {
+                                    problems +=
+                                        "undeclared leaf map at $path"
+                                }
+                            }
+                            else -> {
+                                if (path.isNotEmpty() &&
+                                    (g == null || g.open)) {
+                                    problems +=
+                                        "undeclared record map at $path"
+                                } else {
+                                    if (path.isNotEmpty())
+                                        observed.getOrPut(path) {
+                                            mutableSetOf()
+                                        } += v.keys.map {
+                                            it.toString() }
+                                    for ((k, vv) in v)
+                                        walk(vv,
+                                            if (path.isEmpty())
+                                                k.toString()
+                                            else path + "." + k.toString())
+                                }
+                            }
+                        }
+                    }
+                    is List<*> -> for (el in v) walk(el, path + "[]")
+                    else -> Unit
+                }
+            }
+            walk(encodeGameState(pop), "")
+            check(problems.isEmpty(),
+                "v0.18.0e registry: the group walk finds no " +
+                    "undeclared nested structure ($problems)")
+            val walkGroups = SaveKeys.GROUPS.filter {
+                !it.open && it.path != "appearance" &&
+                    it.path != "npcMemory{}" }
+            check(observed.keys == walkGroups.map { it.path }.toSet(),
+                "v0.18.0e registry: the walk observes exactly " +
+                    "the ${walkGroups.size} declared closed " +
+                    "groups (missing " +
+                    "${walkGroups.map { it.path }.toSet() - observed.keys}, " +
+                    "extra ${observed.keys - walkGroups.map { it.path }.toSet()})")
+            for (g in walkGroups) {
+                check(observed[g.path] ==
+                    g.keys.map { it.name }.toSet(),
+                    "v0.18.0e registry: group ${g.path} carries " +
+                        "exactly its registered keys " +
+                        "(owner ${g.owner})")
+            }
+            check(openSeen == SaveKeys.GROUPS.filter { it.open }
+                    .map { it.path }.toSet(),
+                "v0.18.0e registry: every declared open group " +
+                    "is exercised by the walk ($openSeen)")
+        }
+    }
+    // the standalone appearance shape (player_appearance,
+    // presets and agent/photo appearances all project onto it)
+    val appGroup = SaveKeys.GROUP_BY_PATH.getValue("appearance")
+    check(DEFAULT_APPEARANCE.keys ==
+        appGroup.keys.map { it.name }.toSet() &&
+        validateAppearance(mapOf("skin" to "bogus")).keys ==
+            DEFAULT_APPEARANCE.keys,
+        "v0.18.0e registry: the appearance group is exactly " +
+            "the validateAppearance slot set (owner GameData)")
+    // the npc_memory entry shape, round-tripped through the
+    // real store
+    val npcGroup = SaveKeys.GROUP_BY_PATH.getValue("npcMemory{}")
+    NpcMemoryStore.clear()
+    NpcMemoryStore.deserialize(mapOf("Registry NPC" to mapOf(
+        "meets" to 2, "points" to 5, "lastMetDay" to "20261004",
+        "lastMetMin" to 600, "topics" to listOf("food"),
+        "gifts" to listOf("marble"), "summary" to "s",
+        "eventNote" to "e", "likes" to listOf("music"),
+        "seenAppearance" to "")))
+    val npcEntry = NpcMemoryStore.serialize()["Registry NPC"]
+        as? Map<*, *>
+    check(npcEntry != null && npcEntry.keys.map { it.toString() }
+            .toSet() == npcGroup.keys.map { it.name }.toSet(),
+        "v0.18.0e registry: an npc_memory entry serializes " +
+            "with exactly the registered keys (owner NpcMemory)")
+    NpcMemoryStore.clear()
+
+    // ---------- THE DAMAGE CORPUS (D11) ----------
+    // One damaged save per failure class. Every fixture loads
+    // to a defined, asserted state and never throws.
+    fun baseDoc(): MutableMap<String, Any?> =
+        encodeGameState(decodeGameState(emptyMap())).toMutableMap()
+    fun mutAgents(b: MutableMap<String, Any?>,
+                  f: (MutableMap<String, Any?>) -> Unit) {
+        b["agents"] = (b["agents"] as Map<String, Any?>)
+            .mapValues { (_, av) ->
+                (av as Map<String, Any?>).toMutableMap().also(f)
+            }
+    }
+
+    // (1) truncated doc: unparseable -> salvage from the
+    // standalone shadow keys (previously unexercised through
+    // loadGame with real shadows in place)
+    run {
+        class FakeStore : SaveStore {
+            val map = mutableMapOf<String, String>()
+            override fun read(key: String): String? = map[key]
+            override fun write(key: String, value: String) {
+                map[key] = value
+            }
+            override fun delete(key: String) { map.remove(key) }
+            override fun clear() { map.clear() }
+        }
+        val fake = FakeStore()
+        val full = Json.stringify(
+            encodeGameState(decodeGameState(emptyMap())))
+        fake.map[SaveKeys.GAME_STATE] =
+            full.substring(0, full.length * 3 / 5)
+        fake.map[SaveKeys.FRIENDSHIP] =
+            Json.stringify(mapOf("Stan" to 42, "Kyle" to 7))
+        fake.map[SaveKeys.COLLECTED] =
+            Json.stringify(listOf("golden_compass"))
+        fake.map[SaveKeys.LAST_PLAYED_DATE] = "20261020"
+        fake.map[SaveKeys.SPAWN_DATE] = "20261001"
+        val p = Prefs(fake)
+        val st = p.loadGame()
+        check(st != null && st.friendship["Stan"] == 42 &&
+            st.friendship["Kyle"] == 7 &&
+            "golden_compass" in st.collected &&
+            st.lastPlayedDate == "20261020" &&
+            st.spawnDate == "20261001" && st.timeMin == 480 &&
+            st.agents.size ==
+                decodeGameState(emptyMap()).agents.size,
+            "v0.18.0e corpus truncated: an unreadable doc " +
+                "salvages friendship, collection and dates from " +
+                "the shadow keys over a default town")
+        check(p.storedSaveFormat() == -1,
+            "v0.18.0e corpus truncated: the damaged save " +
+                "reports format -1 (salvage, not a wipe)")
+    }
+    // (2) bracket bomb: the parser's depth cap turns a
+    // stack-overflow crash into a handled unreadable doc
+    run {
+        var threw = false
+        try {
+            Json.parse("[".repeat(5000))
+        } catch (e: IllegalArgumentException) {
+            threw = true
+        }
+        check(threw,
+            "v0.18.0e corpus bracket bomb: 5000 open brackets " +
+                "throw IllegalArgumentException at the depth " +
+                "cap, not StackOverflowError")
+        class FakeStore : SaveStore {
+            val map = mutableMapOf<String, String>()
+            override fun read(key: String): String? = map[key]
+            override fun write(key: String, value: String) {
+                map[key] = value
+            }
+            override fun delete(key: String) { map.remove(key) }
+            override fun clear() { map.clear() }
+        }
+        val fake = FakeStore()
+        fake.map[SaveKeys.GAME_STATE] =
+            "{\"agents\": " + "[".repeat(500) + "}}"
+        fake.map[SaveKeys.FRIENDSHIP] =
+            Json.stringify(mapOf("Stan" to 3))
+        val st = Prefs(fake).loadGame()
+        check(st != null && st.friendship["Stan"] == 3,
+            "v0.18.0e corpus bracket bomb: a bomb nested in " +
+                "the doc still lands on the salvage path")
+    }
+    // (3) bad location id: saneLoc lands every agent at the
+    // Bus Stop; the walk destination clears
+    run {
+        val doc = baseDoc()
+        mutAgents(doc) { it["location"] = "Atlantis"
+            it["destination"] = "Atlantis" }
+        val walk = (doc["walk"] as Map<String, Any?>)
+            .toMutableMap()
+        walk["dest"] = "Atlantis"
+        doc["walk"] = walk
+        val st = decodeGameState(doc)
+        check(st.agents.values.all {
+                it.location == "BusStop" &&
+                    it.destination == "BusStop" } &&
+            st.walkDest == "",
+            "v0.18.0e corpus bad location: every agent and " +
+                "the walk destination sanitize to real places")
+    }
+    // (4) short todayKey: rebuilt from the clamped date fields
+    run {
+        val bad = listOf("2026", "2026134", "2026AB04", "")
+        val rebuilt = bad.all { key ->
+            val doc = baseDoc()
+            doc["gameYear"] = 2027; doc["gameMonth"] = 3
+            doc["gameDay"] = 9; doc["todayKey"] = key
+            decodeGameState(doc).todayKey == "20270309"
+        }
+        val doc = baseDoc()
+        doc["gameYear"] = 2027; doc["gameMonth"] = 3
+        doc["gameDay"] = 9; doc["todayKey"] = "20261004"
+        check(rebuilt &&
+            decodeGameState(doc).todayKey == "20261004",
+            "v0.18.0e corpus short todayKey: implausible keys " +
+                "rebuild as yyyymmdd from the date fields; a " +
+                "plausible key loads untouched")
+    }
+    // (5) NaN coords: through the JSON parser and as raw
+    // doubles; out-of-range axes clamp; short lists default
+    run {
+        val firstAgent = (baseDoc()["agents"]
+            as Map<String, Any?>).keys.first()
+        fun coordDoc(coords: List<Any?>): Map<String, Any?> {
+            val doc = baseDoc()
+            val agents = (doc["agents"] as Map<String, Any?>)
+                .toMutableMap()
+            val am = (agents[firstAgent] as Map<String, Any?>)
+                .toMutableMap()
+            am["coords"] = coords
+            agents[firstAgent] = am
+            doc["agents"] = agents
+            return doc
+        }
+        val viaJson = decodeGameState(Json.parse(
+            Json.stringify(coordDoc(listOf("NaN", 250, -40))))
+            as Map<String, Any?>)
+        val viaDoubles = decodeGameState(
+            coordDoc(listOf(Double.NaN, 250.0)))
+        val viaShort = decodeGameState(coordDoc(listOf(30)))
+        check(viaJson.agents[firstAgent]?.coords == (0 to 100) &&
+            viaDoubles.agents[firstAgent]?.coords == (0 to 100) &&
+            viaShort.agents[firstAgent]?.coords == (30 to 52),
+            "v0.18.0e corpus NaN coords: NaN and junk axes " +
+                "land at 0, 250 clamps to 100, a one-element " +
+                "list defaults its second axis to 52")
+    }
+    // (6) impossible month (and friends): the scalar clamps
+    run {
+        fun field(key: String, v: Any?): GameState {
+            val doc = baseDoc()
+            doc[key] = v
+            return decodeGameState(doc)
+        }
+        check(field("gameMonth", 13).gameMonth == 12 &&
+            field("gameMonth", 0).gameMonth == 1 &&
+            field("gameDay", 45).gameDay == 31 &&
+            field("timeMin", 99999).timeMin == 1439 &&
+            field("timeMin", -5).timeMin == 0,
+            "v0.18.0e corpus impossible month: month coerces " +
+                "to 1..12, day to 1..31, timeMin to 0..1439")
+    }
+    // (7) inflated maps: the decode caps hold; an honestly
+    // huge open map loads whole without throwing
+    run {
+        val doc = baseDoc()
+        doc["events"] = (1..500).map { "e$it" }
+        val ev = decodeGameState(doc)
+        check(ev.events.size == 40 && ev.events.first() ==
+            "e461" && ev.events.last() == "e500",
+            "v0.18.0e corpus inflated: 500 ticker lines trim " +
+                "to the last 40 on decode")
+        val doc2 = baseDoc()
+        doc2["errands"] = (1..60).map { i ->
+            mapOf("id" to "inf$i", "asker" to "Stan",
+                "type" to Errands.TYPES.first(),
+                "source" to "BOARD", "text" to "t",
+                "hint" to "h")
+        }
+        check(decodeGameState(doc2).errands.size ==
+            Errands.STATE_CAP,
+            "v0.18.0e corpus inflated: 60 errands shed to " +
+                "the plate cap on decode")
+        val doc3 = baseDoc()
+        val texts = (1..500).map { i ->
+            val who = KID_ORDER[i % KID_ORDER.size]
+            PhoneText("inf$i", who, who,
+                Phone.TRIGGERS.first(), 1, "20261002",
+                "hello $i").toMap()
+        }
+        doc3["phone"] = mapOf("texts" to texts,
+            "notes" to emptyList<String>(),
+            "meta" to emptyMap<String, Any?>())
+        check(decodeGameState(doc3).phoneTexts.size ==
+            Phone.MAX_TEXTS,
+            "v0.18.0e corpus inflated: 500 texts trim to " +
+                "the inbox cap on decode")
+        val doc4 = baseDoc()
+        doc4["life"] = (1..10000).associate { "k$it" to it }
+        check(decodeGameState(doc4).life.size == 10000,
+            "v0.18.0e corpus inflated: a 10k-entry open map " +
+                "loads whole — caps live on the capped " +
+                "channels, not on open tallies")
+    }
+    // (8) hostile ids: registries filter forged ids on
+    // decode; a hostile agent NAME is inert data
+    run {
+        val doc = baseDoc()
+        doc["mysteryClues"] = listOf(
+            Mystery.CLUE_IDS.first(), "forged_clue", "")
+        doc["wardrobe"] = listOf(
+            Wardrobe.PIECE_IDS.first(), "forged_piece")
+        doc["pocketPals"] = mapOf("forged_card" to 5,
+            PocketPals.CARD_IDS.first() to 500)
+        doc["factionStates"] = mapOf("NoSuchFaction" to
+            mapOf("influence" to 9))
+        doc["arc13Calls"] = mapOf(
+            "frame_99" to Mystery13.CALL_KEYS.first(),
+            "frame_3x" to Mystery13.CALL_KEYS.first(),
+            "frame_3" to Mystery13.CALL_KEYS.first())
+        val agents = (doc["agents"] as Map<String, Any?>)
+            .toMutableMap()
+        agents["Bad\"; DROP"] = agents.values.first()
+        doc["agents"] = agents
+        val st = decodeGameState(doc)
+        check(st.mysteryClues ==
+            setOf(Mystery.CLUE_IDS.first()) &&
+            st.unlockedWardrobe ==
+                setOf(Wardrobe.PIECE_IDS.first()) &&
+            st.pocketPals == mapOf(
+                PocketPals.CARD_IDS.first() to
+                    PocketPals.COUNT_CAP) &&
+            st.arc13Calls.keys == setOf("frame_3") &&
+            "Bad\"; DROP" in st.agents &&
+            st.factionStates.keys ==
+                decodeGameState(emptyMap()).factionStates.keys,
+            "v0.18.0e corpus hostile ids: forged clue, " +
+                "wardrobe, card, faction and frame ids are " +
+                "filtered on decode; a hostile agent name " +
+                "loads as inert data")
+    }
+    // (9) the hostile-doc cases the arc decoders already
+    // handle (Part 8.2's template): enum/set membership is
+    // re-validated on decode, per case
+    run {
+        val doc = baseDoc()
+        val arc2 = (doc["arc2"] as Map<String, Any?>)
+            .toMutableMap()
+        arc2["accused"] = "Nobody McForged"
+        arc2["branch"] = "weird"
+        doc["arc2"] = arc2
+        val arc3 = (doc["arc3"] as Map<String, Any?>)
+            .toMutableMap()
+        arc3["branch"] = "weird"; arc3["choice"] = "weird"
+        doc["arc3"] = arc3
+        doc["arc6Gossip"] = listOf("forged_gossip")
+        doc["arc6Voice"] = mapOf(
+            Mystery6.GOSSIP6_BY_ID.keys.first() to "bogus",
+            "forged" to Mystery6.STANCE_KEYS.first())
+        doc["arc7Commits"] = mapOf(
+            Mystery7.MOVEMENT7_BY_ID.keys.first() to "bogus",
+            "forged" to Mystery7.PICK_KEYS.first())
+        doc["arc8Pairs"] = mapOf(
+            Mystery8.PAIR8_BY_ID.keys.first() to "bogus",
+            "forged" to Mystery8.JUDGE_KEYS.first())
+        doc["arc11Calls"] = mapOf(
+            Mystery11.LETTER11_BY_ID.keys.first() to "bogus")
+        val st = decodeGameState(doc)
+        check(st.arc2Accused == "" && st.arc2Branch == "" &&
+            st.arc3Branch == "" && st.arc3Choice == "" &&
+            st.arc6Gossip.isEmpty() && st.arc6Voice.isEmpty() &&
+            st.arc7Commits.isEmpty() && st.arc8Pairs.isEmpty() &&
+            st.arc11Calls.isEmpty(),
+            "v0.18.0e corpus hostile arcs: forged suspects, " +
+                "branches, choices, stances, picks, judgments " +
+                "and calls all decode to the empty default")
+    }
+    // (10) salvage branches: each recoverGameState input
+    // fails independently (previously unexercised branches)
+    run {
+        val goodFriendship = Json.stringify(
+            mapOf("Stan" to 42))
+        val goodCollected = Json.stringify(
+            listOf("golden_compass"))
+        val a = recoverGameState("{broken", goodCollected,
+            "20261020", "20261001")
+        val b = recoverGameState(goodFriendship, "not json [",
+            "20261020", "20261001")
+        val c = recoverGameState(null, null, "", "")
+        check(a.collected.contains("golden_compass") &&
+            a.friendship["Stan"] == 0 &&
+            b.friendship["Stan"] == 42 &&
+            b.collected.isEmpty() &&
+            a.lastPlayedDate == "20261020" &&
+            c.friendship["Stan"] == 0 &&
+            c.agents.size ==
+                decodeGameState(emptyMap()).agents.size,
+            "v0.18.0e corpus salvage: garbage friendship " +
+                "keeps the collection, garbage collection " +
+                "keeps the friendships, nulls keep the " +
+                "default town — each input fails alone")
+    }
+    // (11) type confusion: every scalar handed the wrong
+    // type; the as?-and-default clamps land the defaults
+    run {
+        val doc = baseDoc()
+        doc["timeMin"] = "soon"; doc["gameMonth"] = listOf(1)
+        doc["gameDay"] = "x"; doc["hasPlaced"] = "yes"
+        doc["playerInside"] = 1; doc["agents"] = 42
+        doc["arc"] = "nope"; doc["walk"] = 7
+        doc["phone"] = "x"; doc["commissions"] = true
+        doc["events"] = "no"; doc["friendship"] = listOf(1)
+        doc["collected"] = 99; doc["holidayId"] = null
+        val st = decodeGameState(doc)
+        check(st.timeMin == 480 && st.gameMonth == 10 &&
+            st.gameDay == 1 && !st.hasPlaced &&
+            !st.playerInside && st.events.isEmpty() &&
+            st.collected.isEmpty() &&
+            st.agents.size ==
+                decodeGameState(emptyMap()).agents.size &&
+            st.holidayId == null,
+            "v0.18.0e corpus type confusion: wrong-typed " +
+                "values degrade field by field to defaults, " +
+                "never to a throw")
+    }
+    // (12) blank and absent docs: the no-save contract
+    run {
+        class FakeStore : SaveStore {
+            val map = mutableMapOf<String, String>()
+            override fun read(key: String): String? = map[key]
+            override fun write(key: String, value: String) {
+                map[key] = value
+            }
+            override fun delete(key: String) { map.remove(key) }
+            override fun clear() { map.clear() }
+        }
+        val fake = FakeStore()
+        check(Prefs(fake).loadGame() == null,
+            "v0.18.0e corpus absent: no game_state at all " +
+                "is a fresh town (loadGame null)")
+        fake.map[SaveKeys.GAME_STATE] = ""
+        val st = Prefs(fake).loadGame()
+        check(st != null && st.todayKey == "20261001" &&
+            st.agents.size ==
+                decodeGameState(emptyMap()).agents.size,
+            "v0.18.0e corpus blank: an empty game_state " +
+                "salvages to the default town, its todayKey " +
+                "rebuilt from the default date")
+    }
+    // (13) npc_memory garbage: the memory loader swallows
+    // it and marks itself loaded (its own damage class)
+    run {
+        class FakeStore : SaveStore {
+            val map = mutableMapOf<String, String>()
+            override fun read(key: String): String? = map[key]
+            override fun write(key: String, value: String) {
+                map[key] = value
+            }
+            override fun delete(key: String) { map.remove(key) }
+            override fun clear() { map.clear() }
+        }
+        val fake = FakeStore()
+        fake.map[SaveKeys.NPC_MEMORY] = "{{{garbage"
+        NpcMemoryStore.clear()
+        Prefs(fake).loadNpcMemory()
+        check(NpcMemoryStore.isLoaded,
+            "v0.18.0e corpus npc garbage: an unreadable " +
+                "npc_memory doc loads as no memories, " +
+                "never as a crash")
+        NpcMemoryStore.clear()
+    }
+    // (14) repair idempotence: a damaged doc, once loaded
+    // and re-saved, loads back byte-identical — the repair
+    // is a fixed point
+    run {
+        class FakeStore : SaveStore {
+            val map = mutableMapOf<String, String>()
+            override fun read(key: String): String? = map[key]
+            override fun write(key: String, value: String) {
+                map[key] = value
+            }
+            override fun delete(key: String) { map.remove(key) }
+            override fun clear() { map.clear() }
+        }
+        Prefs(FakeStore()).wipeAll()
+        val doc = baseDoc()
+        mutAgents(doc) { it["location"] = "Atlantis" }
+        doc["gameMonth"] = 13; doc["todayKey"] = "2026"
+        val s1 = decodeGameState(doc)
+        val fake = FakeStore()
+        val p = Prefs(fake)
+        p.saveGame(s1)
+        val s2 = p.loadGame()
+        check(s2 != null && Json.stringify(encodeGameState(s1)) ==
+            Json.stringify(encodeGameState(s2!!)),
+            "v0.18.0e corpus repair: a repaired save " +
+                "re-saves and reloads byte-identically")
+    }
+
+    // ---------- docs + the golden baseline is untouched ----------
+    val auditDoc = File(root, "docs/SAVE_KEY_AUDIT.md")
+    check(auditDoc.exists() &&
+        auditDoc.readText().contains("107") &&
+        auditDoc.readText().contains("hangDay"),
+        "v0.18.0e docs: docs/SAVE_KEY_AUDIT.md carries the " +
+            "unread-key audit (107 doc keys; the gallery " +
+            "hangDay/closeDay finding named)")
+    val changelogDoc = File(root, "docs/CHANGELOG.md").readText()
+    check(changelogDoc.contains("## Status \u2014 v0.18.0e"),
+        "v0.18.0e docs: CHANGELOG carries this build's status")
+    val readmeDoc = File(root, "README.md").readText()
+    check(readmeDoc.contains("## Status \u2014 v0.18.0e"),
+        "v0.18.0e docs: README carries this build's status")
+    val goldenRows = File(root, "tools/golden/hashes.tsv")
+        .readLines()
+        .filter { it.isNotEmpty() && !it.startsWith("#") }
+    check(goldenRows.size == 155,
+        "v0.18.0e: the Phase 1 golden baseline still stands " +
+            "at 155 targets (saw ${goldenRows.size}) — " +
+            "Phase 3 re-strikes nothing")
 }
