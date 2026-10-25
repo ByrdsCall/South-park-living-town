@@ -142,7 +142,7 @@ object MirrorMain {
     fun boot(dataDir: File) {
         act = Activity()
         ensureLoreLoaded(act)
-        prefs = Prefs(act)
+        prefs = Prefs(FileSaveStore(File(dataDir, "prefs")))
         engine = Engine()
         val loaded = prefs.loadGame()
         val pName = prefs.getPlayerName() ?: PLAYER_DEFAULT_NAME

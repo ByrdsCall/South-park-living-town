@@ -46,7 +46,7 @@ object Capture {
             outDir.mkdirs()
             MirrorMain.act = Activity()
             ensureLoreLoaded(MirrorMain.act)
-            val prefs = Prefs(MirrorMain.act)
+            val prefs = Prefs(FileSaveStore(File(dataDir, "prefs")))
             runTrip(name, outDir, weather, prefs.getAppearance())
             println("[capture] trip done -> $outDir")
             kotlin.system.exitProcess(0)
@@ -88,7 +88,7 @@ object Capture {
 
         MirrorMain.act = Activity()
         ensureLoreLoaded(MirrorMain.act)
-        val prefs = Prefs(MirrorMain.act)
+        val prefs = Prefs(FileSaveStore(File(dataDir, "prefs")))
         val appearance = prefs.getAppearance()
 
         for (spec in scenes) {
