@@ -1708,8 +1708,8 @@ fun main(args: Array<String>) {
         check(settingsSrcF.contains("storedSaveFormat()"),
             "saves: Settings shows the save format")
         val manifestSrc = File(root, "AndroidManifest.xml").readText()
-        check(manifestSrc.contains("android:versionCode=\"125\"") &&
-            manifestSrc.contains("android:versionName=\"0.17.0a\""),
+        check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+            manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
             "release: the manifest itself carries 67 / 0.9.0a (no stale-manifest repeat)")
         check(File(root, "res/drawable/ic_launcher.png").length() > 0,
             "icon: a launcher icon ships")
@@ -3107,6 +3107,8 @@ fun main(args: Array<String>) {
     sectionV0160e(root)
     sectionV0160ePass2(root)
     sectionV0170a(root)
+    sectionV0170b(root)
+    sectionV0180a(root)
 
     println("== $checks checks, $failures failures ==")
     if (failures > 0) kotlin.system.exitProcess(1)
@@ -5186,7 +5188,7 @@ private fun sectionV030f(root: String) {
         "booth: a closed case round-trips through the real save path")
 
     // ---------- spoiler hygiene: the changelog keeps the secret ----------
-    val readme2 = File(root, "README.md").readText()
+    val readme2 = File(root, "docs/CHANGELOG.md").readText()
     val fSection = readme2.substringAfter("### v0.3.0f")
         .substringBefore("### v0.3.0e")
     check(fSection.contains("The Locked Booth"),
@@ -10033,7 +10035,7 @@ private fun sectionV040f(root: String) {
         "buried: a closed case (and its standing favor) round-trips the real save path")
 
     // ---------- spoiler hygiene: the changelog keeps the secret ----------
-    val readme3 = File(root, "README.md").readText()
+    val readme3 = File(root, "docs/CHANGELOG.md").readText()
     val f3Section = readme3.substringAfter("### v0.4.0f")
         .substringBefore("### v0.4.0e")
     check(f3Section.contains("What's Buried"),
@@ -13676,7 +13678,7 @@ run {
     }
 
     // ---------- README ----------
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.5.0e"),
         "phone: the v0.5.0e changelog section exists")
 }
@@ -14151,7 +14153,7 @@ println("== v0.5.0f: hair, hats & the seamless merge ==")
     }
 
     // ---------- README ----------
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.5.0f"),
         "figure: the v0.5.0f changelog section exists")
 }
@@ -14448,7 +14450,7 @@ println("== v0.5.0g: scene depth pass ==")
             "every tap through it")
 
     // ---------- README ----------
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.5.0g"),
         "depth: the v0.5.0g changelog section exists")
 }
@@ -15037,7 +15039,7 @@ println("== v0.5.0h: season finales ==")
             "src/com/hunt3r/southparktown/TalkGate.kt").readText()
         check(talkSrc.contains("Finales.ambientLine(state, npcName)"),
             "finales: owed conversation includes the ensemble's week talk")
-        val readme = File(root, "README.md").readText()
+        val readme = File(root, "docs/CHANGELOG.md").readText()
         check(readme.contains("### v0.5.0h"),
             "finales: the v0.5.0h changelog section exists")
     }
@@ -16519,7 +16521,8 @@ run {
     // to exactly one line. If a dial ships, its name lands
     // here in the same build; this pin is how the next
     // polish pass notices one that didn't.
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/TUNING.md").readText()
+    val changelog = File(root, "docs/CHANGELOG.md").readText()
     val ledgerDials = listOf(
         // the Walk (v0.5.0a)
         "MINUTES_PER_UNIT", "SHORTCUT_SAVE_MINUTES", "MIN_LEG_MINUTES",
@@ -16549,7 +16552,7 @@ run {
         "ledger: the ledger section itself stands")
 
     // ---------- README ----------
-    check(readme.contains("### v0.5.0i"),
+    check(changelog.contains("### v0.5.0i"),
         "polish5: the v0.5.0i changelog section exists")
 }
 }
@@ -17035,7 +17038,7 @@ println("== v0.6.0a: photo commissions ==")
         "src/com/hunt3r/southparktown/GameActivity.kt").readText()
     check(gameSrc.contains("Commissions.talkLines(state, npcName)"),
         "commissions: the Talk sheet carries the asker's words")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.6.0a"),
         "commissions: the v0.6.0a changelog section exists")
 }
@@ -17507,7 +17510,7 @@ run {
         "src/com/hunt3r/southparktown/Threads.kt").readText()
     check(threadsSrc.contains("\"favor chain\" to listOf("),
         "chains: Threads carries the favor-chain follow-up bank")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.6.0b"),
         "chains: the v0.6.0b changelog section exists")
 }
@@ -18109,7 +18112,7 @@ private fun sectionV060c(root: String) {
         "gardener: a closed case (and its kept secret) round-trips the real save path")
 
     // ---------- spoiler hygiene: the changelog keeps the secret ----------
-    val readme4 = File(root, "README.md").readText()
+    val readme4 = File(root, "docs/CHANGELOG.md").readText()
     val cSection = readme4.substringAfter("### v0.6.0c")
         .substringBefore("### v0.6.0b")
     check(cSection.contains("The Night Gardener"),
@@ -19861,7 +19864,7 @@ private fun sectionV060f(root: String) {
     val thSrc = File(root, "src/com/hunt3r/southparktown/Threads.kt").readText()
     check(thSrc.contains("\"vote\" to listOf"),
         "votes: the champions keep the thread in talks")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/TUNING.md").readText()
     for (dial in listOf("NO_REPEAT_WEEKS", "OUTCOME_WEEKS", "HISTORY_CAP",
         "CHAMPION_LEAN", "FACTION_LEAN", "SCHOOL_LEAN")) {
         check(readme.contains(dial), "votes: the tuning ledger names $dial")
@@ -19889,7 +19892,7 @@ private fun sectionV060f(root: String) {
 // =====================================================================
 private fun sectionV060g(root: String) {
     println("== v0.6.0g: polish pass #6 — the Queue #6 audit ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.6.0g"),
         "v0.6.0g: the README carries this build's changelog entry")
 
@@ -20690,11 +20693,12 @@ private fun sectionV060g(root: String) {
         // Every paper-tuned Queue #6 constant, named in the
         // ledger section itself — scoped to the section, so a
         // dial that only ever made a changelog doesn't count.
-        val ledgerStart = readme.indexOf("## Tuning ledger")
-        val ledgerEnd = readme.indexOf("## Changelog")
+        val tuning = File(root, "docs/TUNING.md").readText()
+        val ledgerStart = tuning.indexOf("## Tuning ledger")
+        val ledgerEnd = tuning.length
         check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
             "ledger: the ledger section stands ahead of the changelog")
-        val ledger = readme.substring(ledgerStart, ledgerEnd)
+        val ledger = tuning.substring(ledgerStart, ledgerEnd)
         val q6Dials = listOf(
             // commissions (v0.6.0a)
             "WEEK_DAYS", "POSTINGS", "MAX_PLATE", "EXPIRY_DAYS",
@@ -23539,8 +23543,8 @@ private fun sectionV070f(root: String) {
 
     // ---------- version ----------
     val manifestSrc5 = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc5.contains("android:versionCode=\"125\"") &&
-        manifestSrc5.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc5.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc5.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "confessions: the manifest carries 67 / 0.9.0a")
 
     // ---------- THE SPOILER WALL ----------
@@ -23581,7 +23585,7 @@ private fun sectionV070f(root: String) {
         sMid5.absDay += 1
         Mystery5.confessionLine5(sMid5, who)?.let { preReveal5.add(it.text) }
     }
-    val readme5 = File(root, "README.md").readText()
+    val readme5 = File(root, "docs/CHANGELOG.md").readText()
     val entry5 = readme5.substringAfter("### v0.7.0f")
         .substringBefore("### v0.7.0e")
     preReveal5.add(entry5)
@@ -23608,12 +23612,12 @@ private fun sectionV070f(root: String) {
 // budget, and the tuning-ledger sweep.
 private fun sectionV070g(root: String) {
     println("== v0.7.0g: polish & performance pass #7 — the Queue #7 audit ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.7.0g"),
         "v0.7.0g: the README carries this build's changelog entry")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "v0.7.0g: the source tree and its description agree — " +
             "97 Kotlin files (counted $ktCount; the count moved " +
             "with v0.10.0c's Play.kt, v0.10.0d's " +
@@ -24536,11 +24540,12 @@ private fun sectionV070g(root: String) {
         // a dial that only ever made a changelog doesn't
         // count. (Cast wave 3 tuned no dials — its numbers
         // are the sheets', and the sheets are the spec.)
-        val ledgerStart = readme.indexOf("## Tuning ledger")
-        val ledgerEnd = readme.indexOf("## Changelog")
+        val tuning = File(root, "docs/TUNING.md").readText()
+        val ledgerStart = tuning.indexOf("## Tuning ledger")
+        val ledgerEnd = tuning.length
         check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
             "ledger: the ledger section stands ahead of the changelog")
-        val ledger = readme.substring(ledgerStart, ledgerEnd)
+        val ledger = tuning.substring(ledgerStart, ledgerEnd)
         val q7Dials = listOf(
             // town secrets (v0.7.0b)
             "SECRET_COUNT", "FEAT_THRESHOLD",
@@ -26607,7 +26612,7 @@ private fun sectionV080d(root: String) {
             surfaces.any { d in it.lowercase() } },
             "yearbook: no judge, page or cover breathes a " +
                 "word of any case's answer")
-        val readme = File(root, "README.md").readText()
+        val readme = File(root, "docs/CHANGELOG.md").readText()
         val entryStart = readme.indexOf("### v0.8.0d")
         val entryEnd = readme.indexOf("### v0.8.0c")
         check(entryStart >= 0 && entryEnd > entryStart &&
@@ -26642,7 +26647,7 @@ private fun sectionV080e(root: String) {
     println("== v0.8.0e: the rival — somebody's measuring stick ==")
     val memSnapshot = NpcMemoryStore.serialize()
     try {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.8.0e"),
         "v0.8.0e: the README carries this build's changelog entry")
 
@@ -28326,10 +28331,10 @@ private fun sectionV080f(root: String) {
 
     // ---------- version + the spoiler wall ----------
     val manifestSrc6 = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc6.contains("android:versionCode=\"125\"") &&
-        manifestSrc6.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc6.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc6.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "opinion: the manifest carries 67 / 0.9.0a")
-    val readme6 = File(root, "README.md").readText()
+    val readme6 = File(root, "docs/CHANGELOG.md").readText()
     val entryStart6 = readme6.indexOf("### v0.8.0f")
     val entryEnd6 = readme6.indexOf("### v0.8.0e")
     check(entryStart6 >= 0 && entryEnd6 > entryStart6,
@@ -28405,12 +28410,12 @@ private fun sectionV080f(root: String) {
 // code changes only for a defect the audit itself proves.
 private fun sectionV080g(root: String) {
     println("== v0.8.0g: polish & performance pass #8 — the Queue #8 audit ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.8.0g"),
         "v0.8.0g: the README carries this build's changelog entry")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "v0.8.0g: the source tree and its description agree — " +
             "97 Kotlin files (the audit added none; the count " +
             "moved later with v0.10.0c's Play.kt, v0.10.0d's " +
@@ -29670,11 +29675,12 @@ private fun sectionV080g(root: String) {
         // (BEAT_COINS) but spoke of the fourth dial — the
         // +4 friendship each beat pays — only in prose; it
         // now names BEAT_FRIENDSHIP beside its siblings.
-        val ledgerStart = readme.indexOf("## Tuning ledger")
-        val ledgerEnd = readme.indexOf("## Changelog")
+        val tuning = File(root, "docs/TUNING.md").readText()
+        val ledgerStart = tuning.indexOf("## Tuning ledger")
+        val ledgerEnd = tuning.length
         check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
             "ledger: the ledger section stands ahead of the changelog")
-        val ledger = readme.substring(ledgerStart, ledgerEnd)
+        val ledger = tuning.substring(ledgerStart, ledgerEnd)
         val q8Dials = listOf(
             // faction capstones (v0.8.0b)
             "CAPSTONE_MIN_STANDING", "BEAT_COINS",
@@ -29727,8 +29733,8 @@ private fun sectionV080g(root: String) {
 
     // ---------- the release pin ----------
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 67 / 0.9.0a")
 }
 
@@ -29988,7 +29994,7 @@ private fun sectionV090b(root: String) {
 // and the real funnels it hooks.
     println("== v0.9.0b: your crew ==")
     val memSnapshotB = NpcMemoryStore.serialize()
-    val readmeB = File(root, "README.md").readText()
+    val readmeB = File(root, "docs/CHANGELOG.md").readText()
     check(readmeB.contains("### v0.9.0b"),
         "crew: the README carries this build's changelog entry")
     val engB = Engine(909_002)
@@ -30550,7 +30556,7 @@ private fun sectionV090c(root: String) {
 // Mayor, fireworks through SkyState, and an honest record
 // — attended or missed — on the Journal's fair page.
     println("== v0.9.0c: the county fair ==")
-    val readmeC = File(root, "README.md").readText()
+    val readmeC = File(root, "docs/CHANGELOG.md").readText()
     check(readmeC.contains("### v0.9.0c"),
         "fair: the README carries this build's changelog entry")
     val engC = Engine(909_003)
@@ -31110,7 +31116,7 @@ private fun sectionV090c(root: String) {
                 "elders as one-line summaries — winners named, " +
                 "a missed year marked missed")
         check(File(root, "src/com/hunt3r/southparktown").listFiles()
-            ?.count { it.name.endsWith(".kt") } == 134,
+            ?.count { it.name.endsWith(".kt") } == 137,
             "fair: the source tree is 110 Kotlin files — Fair.kt " +
                 "joined at v0.9.0c, Darkroom.kt at v0.9.0d, " +
                 "RivalCrew.kt at v0.9.0e, Family.kt at v0.10.0a, " +
@@ -31146,7 +31152,7 @@ private fun sectionV090d(root: String) {
 // and a brass plate derived from the yearbooks, never
 // hand-set. The source record is never touched.
     println("== v0.9.0d: the darkroom ==")
-    val readmeD = File(root, "README.md").readText()
+    val readmeD = File(root, "docs/CHANGELOG.md").readText()
     check(readmeD.contains("### v0.9.0d"),
         "darkroom: the README carries this build's changelog entry")
     val engD = Engine(909_004)
@@ -31530,12 +31536,12 @@ private fun sectionV090e(root: String) {
     println("== v0.9.0e: the rival's crew ==")
     val memSnapshotE2 = NpcMemoryStore.serialize()
     try {
-    val readmeE2 = File(root, "README.md").readText()
+    val readmeE2 = File(root, "docs/CHANGELOG.md").readText()
     check(readmeE2.contains("### v0.9.0e"),
         "rivalcrew: the README carries this build's changelog entry")
     val manifestE2 = File(root, "AndroidManifest.xml").readText()
-    check(manifestE2.contains("android:versionCode=\"125\"") &&
-        manifestE2.contains("android:versionName=\"0.17.0a\""),
+    check(manifestE2.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestE2.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "rivalcrew: the manifest carries 71 / 0.9.0e")
 
     val engE2 = Engine(909_005)
@@ -32873,8 +32879,8 @@ private fun sectionV090f(root: String) {
 
     // ---------- version ----------
     val manifestSrc7 = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc7.contains("android:versionCode=\"125\"") &&
-        manifestSrc7.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc7.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc7.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "backwards: the manifest carries 72 / 0.9.0f")
 
     // ---------- THE SPOILER WALL ----------
@@ -32930,7 +32936,7 @@ private fun sectionV090f(root: String) {
     sMid7.arc7Commits["m2"] = "checked"
     sMid7.arc7Commits["m1"] = "checked"
     preReveal7.addAll(Mystery7.boardLines7(sMid7))
-    val readme7 = File(root, "README.md").readText()
+    val readme7 = File(root, "docs/CHANGELOG.md").readText()
     val entry7 = readme7.substringAfter("### v0.9.0f")
         .substringBefore("### v0.9.0e")
     preReveal7.add(entry7)
@@ -33535,8 +33541,8 @@ private fun sectionV0100f(root: String) {
 
     // ---------- version ----------
     val manifestSrc8 = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc8.contains("android:versionCode=\"125\"") &&
-        manifestSrc8.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc8.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc8.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "alibis: the manifest carries 83 / 0.11.0c")
 
     // ---------- THE SPOILER WALL ----------
@@ -33594,7 +33600,7 @@ private fun sectionV0100f(root: String) {
         preReveal8.add(p.title); preReveal8.add(p.signatureText)
     }
     preReveal8.addAll(Mystery8.boardLines8(sBoard))
-    val readme8 = File(root, "README.md").readText()
+    val readme8 = File(root, "docs/CHANGELOG.md").readText()
     val entry8 = readme8.substringAfter("### v0.10.0f")
         .substringBefore("### v0.10.0e")
     preReveal8.add(entry8)
@@ -33637,12 +33643,12 @@ private fun sectionV0100f(root: String) {
 // check with its evidence first, in the open.
 private fun sectionV0100g(root: String) {
     println("== v0.10.0g: polish & performance pass #10 — the Queue #10 audit ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.10.0g"),
         "v0.10.0g: the README carries this build's changelog entry")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "v0.10.0g: the source tree and its description agree — " +
             "97 Kotlin files (the audit added none; the count " +
             "moved later with v0.11.0d's CastDataWave6.kt) (counted $ktCount)")
@@ -35346,11 +35352,12 @@ private fun sectionV0100g(root: String) {
         // changelog doesn't count. (The cases entry already
         // closes with the eighth case — v0.10.0f's own
         // changelog carried it there; the sweep proves it.)
-        val ledgerStart = readme.indexOf("## Tuning ledger")
-        val ledgerEnd = readme.indexOf("## Changelog")
+        val tuning = File(root, "docs/TUNING.md").readText()
+        val ledgerStart = tuning.indexOf("## Tuning ledger")
+        val ledgerEnd = tuning.length
         check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
             "ledger: the ledger section stands ahead of the changelog")
-        val ledger = readme.substring(ledgerStart, ledgerEnd)
+        val ledger = tuning.substring(ledgerStart, ledgerEnd)
         val q10Dials = listOf(
             // your family (v0.10.0a)
             "ARRIVAL_ABS_DAY", "DINNER_WEEKDAYS", "GUEST_CHANCE",
@@ -35413,19 +35420,19 @@ private fun sectionV0100g(root: String) {
 
     // ---------- the release pin ----------
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
 }
 
 private fun sectionV090g(root: String) {
     println("== v0.9.0g: polish & performance pass #9 — the Queue #9 audit ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.9.0g"),
         "v0.9.0g: the README carries this build's changelog entry")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "v0.9.0g: the source tree and its description agree — " +
             "97 Kotlin files (the audit added none; the count " +
             "moved later with v0.10.0c's Play.kt, v0.10.0d's " +
@@ -36743,11 +36750,12 @@ private fun sectionV090g(root: String) {
         // — and the cases entry ended at the sixth case;
         // it now closes with the seventh's delays,
         // CASE_RETURN_DELAY_DAYS among them.
-        val ledgerStart = readme.indexOf("## Tuning ledger")
-        val ledgerEnd = readme.indexOf("## Changelog")
+        val tuning = File(root, "docs/TUNING.md").readText()
+        val ledgerStart = tuning.indexOf("## Tuning ledger")
+        val ledgerEnd = tuning.length
         check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
             "ledger: the ledger section stands ahead of the changelog")
-        val ledger = readme.substring(ledgerStart, ledgerEnd)
+        val ledger = tuning.substring(ledgerStart, ledgerEnd)
         val q9Dials = listOf(
             // your crew (v0.9.0b)
             "MAX_CREW", "INVITE_MIN_POINTS", "CREW_AFFINITY",
@@ -36805,8 +36813,8 @@ private fun sectionV090g(root: String) {
 
     // ---------- the release pin ----------
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
 }
 
@@ -36822,7 +36830,8 @@ private fun sectionV090g(root: String) {
 // darkroom's own discipline.
 private fun sectionV0100a(root: String) {
     println("== v0.10.0a: your family arrives ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
+    val tuning = File(root, "docs/TUNING.md").readText()
     check(readme.contains("### v0.10.0a"),
         "v0.10.0a: the README carries this build's changelog entry")
     val famSrc = File(root,
@@ -37349,7 +37358,7 @@ private fun sectionV0100a(root: String) {
             Family.DINNER_WEEKDAYS == setOf(0, 2, 4) &&
             Family.GUEST_CHANCE == 0.45 &&
             Family.FETCH_ITEMS.all { itemById(it) != null } &&
-            readme.contains("family allowance"),
+            tuning.contains("family allowance"),
             "ledger: the family dials stand at the values the " +
                 "README tuning ledger prints (arrival day 3, " +
                 "allowance 3 🪙 on weekday 0, dinners {0,2,4}, " +
@@ -37359,8 +37368,8 @@ private fun sectionV0100a(root: String) {
 
     // ---------- the release pin ----------
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
 }
 
@@ -37377,7 +37386,8 @@ private fun sectionV0100a(root: String) {
 // speak it — only the finale's own lines may.
 private fun sectionV0100b(root: String) {
     println("== v0.10.0b: hero nights ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
+    val tuning = File(root, "docs/TUNING.md").readText()
     check(readme.contains("### v0.10.0b"),
         "v0.10.0b: the README carries this build's changelog entry")
     val heroSrc = File(root,
@@ -37553,7 +37563,7 @@ private fun sectionV0100b(root: String) {
     // ---------- the cadence ----------
     run {
         check(Heroes.PATROL_WEEKDAYS == setOf(3, 6) &&
-            readme.contains("Wednesday and Saturday"),
+            tuning.contains("Wednesday and Saturday"),
             "heroes: patrols run Wednesday and Saturday, as " +
                 "the ledger prints")
         check((0..27).count { Heroes.isPatrolNight(it) } == 8 &&
@@ -38118,8 +38128,8 @@ private fun sectionV0100b(root: String) {
 
     // ---------- the release pin ----------
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
 }
 // ================= v0.10.0c: the school play =================
@@ -38136,7 +38146,7 @@ private fun sectionV0100b(root: String) {
 // round-trips.
 private fun sectionV0100c(root: String) {
     println("== v0.10.0c: the school play ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.10.0c"),
         "v0.10.0c: the README carries this build's changelog entry")
     val playSrc = File(root,
@@ -38831,7 +38841,7 @@ private fun sectionV0100c(root: String) {
             "src/com/hunt3r/southparktown").listFiles()
             ?.count { it.isFile && it.name.endsWith(".kt") }
             ?: -1
-        check(ktCount == 134 && readme.contains(
+        check(ktCount == 137 && readme.contains(
             "105 Kotlin files"),
             "play: the tree is 105 Kotlin files — Play.kt at " +
                 "v0.10.0c, GroupChats.kt at v0.10.0d, " +
@@ -38842,9 +38852,9 @@ private fun sectionV0100c(root: String) {
     val manifestSrc = File(root,
         "AndroidManifest.xml").readText()
     check(manifestSrc.contains(
-        "android:versionCode=\"125\"") &&
+        "android:versionCode=\"${Version.VERSION_CODE}\"") &&
         manifestSrc.contains(
-            "android:versionName=\"0.17.0a\""),
+            "android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
 }
 
@@ -38864,7 +38874,7 @@ private fun sectionV0100d(root: String) {
 // dial does not move.
     println("== v0.10.0d: group chats ==")
     val memSnapshotD = NpcMemoryStore.serialize()
-    val readmeD = File(root, "README.md").readText()
+    val readmeD = File(root, "docs/CHANGELOG.md").readText()
     check(readmeD.contains("### v0.10.0d"),
         "v0.10.0d: the README carries this build's changelog entry")
     val gSrc = File(root,
@@ -39481,8 +39491,8 @@ private fun sectionV0100d(root: String) {
     }
 
     val manifestD = File(root, "AndroidManifest.xml").readText()
-    check(manifestD.contains("android:versionCode=\"125\"") &&
-        manifestD.contains("android:versionName=\"0.17.0a\""),
+    check(manifestD.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestD.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
     NpcMemoryStore.deserialize(memSnapshotD)
 }
@@ -39509,7 +39519,8 @@ private fun sectionV0100e(root: String) {
 // keys; a pre-0.10.0e save simply has no stand.
     println("== v0.10.0e: your stand ==")
     val memSnapshotE2 = NpcMemoryStore.serialize()
-    val readmeE2 = File(root, "README.md").readText()
+    val readmeE2 = File(root, "docs/CHANGELOG.md").readText()
+    val tuning = File(root, "docs/TUNING.md").readText()
     check(readmeE2.contains("### v0.10.0e"),
         "v0.10.0e: the README carries this build's changelog entry")
     val standSrc = File(root,
@@ -39604,7 +39615,7 @@ private fun sectionV0100e(root: String) {
                     "days and prices inside the band — shop " +
                     "price to 3x, never below, never above")
         }
-        check(readmeE2.contains("PERMIT_COST"),
+        check(tuning.contains("PERMIT_COST"),
             "stand: the tuning ledger names the dials")
     }
 
@@ -40341,7 +40352,7 @@ private fun sectionV0100e(root: String) {
         "src/com/hunt3r/southparktown").listFiles()
         ?.count { it.isFile && it.name.endsWith(".kt") }
         ?: -1
-    check(ktCountE2 == 134 && readmeE2.contains(
+    check(ktCountE2 == 137 && readmeE2.contains(
         "105 Kotlin files"),
         "stand: the tree is 108 Kotlin files — Stand.kt " +
             "at v0.10.0e, Mystery8.kt at v0.10.0f, Garden.kt at v0.11.0b, Sleepovers.kt at v0.11.0c, " +
@@ -40349,9 +40360,9 @@ private fun sectionV0100e(root: String) {
     val manifestE2 = File(root,
         "AndroidManifest.xml").readText()
     check(manifestE2.contains(
-        "android:versionCode=\"125\"") &&
+        "android:versionCode=\"${Version.VERSION_CODE}\"") &&
         manifestE2.contains(
-            "android:versionName=\"0.17.0a\""),
+            "android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
     NpcMemoryStore.deserialize(memSnapshotE2)
 }
@@ -40370,16 +40381,16 @@ private fun sectionV0110a(root: String) {
 // and the save round-trip. State rides life/lifeText only.
 println("== v0.11.0a: the town newspaper — Queue #11 item 1 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.11.0a"),
         "paper: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "paper: the source tree and its description agree — " +
             "97 Kotlin files (Newspaper.kt joined at v0.11.0a, Garden.kt at v0.11.0b, Sleepovers.kt at v0.11.0c) " +
             "(counted $ktCount)")
@@ -40740,16 +40751,16 @@ private fun sectionV0110b(root: String) {
 // rides life/lifeText — a legacy save has bare beds.
 println("== v0.11.0b: your garden — Queue #11 item 2 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.11.0b"),
         "garden: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "garden: the source tree and its description agree — " +
             "97 Kotlin files (Garden.kt was v0.11.0b's addition; Sleepovers.kt is v0.11.0c's) " +
             "(counted $ktCount)")
@@ -41301,16 +41312,16 @@ private fun sectionV0110c(root: String) {
 // lifeText — a legacy save simply never hosted one.
 println("== v0.11.0c: sleepovers — Queue #11 item 3 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.11.0c"),
         "sleepovers: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 83 / 0.11.0c")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "sleepovers: the source tree and its description agree — " +
             "97 Kotlin files (Sleepovers.kt is the one addition) " +
             "(counted $ktCount)")
@@ -42434,16 +42445,16 @@ private fun sectionV0110e(root: String) {
 // state rides life/lifeText — zero new save fields.
 println("== v0.11.0e: the winter carnival — Queue #11 item 5 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.11.0e"),
         "carnival: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 85 / 0.11.0e")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "carnival: the source tree and its description agree — " +
             "97 Kotlin files (Carnival.kt is the one addition) " +
             "(counted $ktCount)")
@@ -43634,12 +43645,12 @@ private fun sectionV0110f(root: String) {
 
     // ---------- version ----------
     val manifestF = read9("AndroidManifest.xml")
-    check(manifestF.contains("versionCode=\"125\"") &&
-        manifestF.contains("versionName=\"0.17.0a\""),
+    check(manifestF.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestF.contains("versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 86 / 0.11.0f")
 
     // ---------- the spoiler wall ----------
-    val readme9 = read9("README.md")
+    val readme9 = read9("docs/CHANGELOG.md")
     val readmeStart9 = readme9.indexOf("### v0.11.0f")
     val readmeEnd9 = readme9.indexOf("### v0.11.0e")
     check(readmeStart9 >= 0 && readmeEnd9 > readmeStart9,
@@ -43704,16 +43715,16 @@ private fun sectionV0110g(root: String) {
 // every Queue #11 dial; and veteran X — the saturated
 // save, Queue #11's state laid over veteran IX's body.
 println("== v0.11.0g: polish & performance pass #11 — the Queue #11 audit ==")
-val readme = File(root, "README.md").readText()
+val readme = File(root, "docs/CHANGELOG.md").readText()
 check(readme.contains("### v0.11.0g"),
     "v0.11.0g: the README carries this build's changelog entry")
 val manifestSrc = File(root, "AndroidManifest.xml").readText()
-check(manifestSrc.contains("android:versionCode=\"125\"") &&
-    manifestSrc.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 87 / 0.11.0g")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 134 && readme.contains("105 Kotlin files"),
+check(ktCount == 137 && readme.contains("105 Kotlin files"),
     "v0.11.0g: the source tree and its description agree — " +
         "99 Kotlin files (the audit added none) (counted $ktCount)")
 
@@ -44611,11 +44622,12 @@ run {
 
 // ---------- the tuning ledger, swept for Queue #11 ----------
 run {
-    val ledgerStart = readme.indexOf("## Tuning ledger")
-    val ledgerEnd = readme.indexOf("## Changelog")
+    val tuning = File(root, "docs/TUNING.md").readText()
+    val ledgerStart = tuning.indexOf("## Tuning ledger")
+    val ledgerEnd = tuning.length
     check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
         "ledger: the ledger section stands ahead of the changelog")
-    val ledger = readme.substring(ledgerStart, ledgerEnd)
+    val ledger = tuning.substring(ledgerStart, ledgerEnd)
     val q11Dials = listOf(
         // the town newspaper (v0.11.0a)
         "SKY_LOG_CAP", "HEADLINE_CAP",
@@ -45356,16 +45368,16 @@ private fun sectionV0120a(root: String) {
 // order; every pair the calendar CAN seat is fabricated.
 println("== v0.12.0a: the paper grows up — Queue #12 item 1 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.12.0a"),
         "paper grows: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 89 / 0.12.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "paper grows: no new module — the tree stood at 98 " +
             "Kotlin files (counted $ktCount)")
 
@@ -45903,16 +45915,16 @@ private fun sectionV0120b(root: String) {
 // disciplines at all.
 println("== v0.12.0b: the general store counter — Queue #12 item 2 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.12.0b"),
         "counters: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 89 / 0.12.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "counters: one new module (Shop.kt) — the tree is at " +
             "99 Kotlin files (counted $ktCount)")
 
@@ -46204,16 +46216,16 @@ private fun sectionV0120c(root: String) {
 // ONE lived time space by a two-year marched sweep.
 println("== v0.12.0c: cast birthdays — Queue #12 item 3 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.12.0c"),
         "birthdays: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 91 / 0.12.0d")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "birthdays: one new module (Birthdays.kt) — the tree is at " +
             "105 Kotlin files (counted $ktCount)")
 
@@ -46862,16 +46874,16 @@ private fun sectionV0120d(root: String) {
 // for any pattern motif at all.
 println("== v0.12.0d: sleepwear — Queue #12 item 4 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.12.0d"),
         "sleepwear: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 91 / 0.12.0d")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "sleepwear: one new module (Sleepwear.kt) — the tree is at " +
             "105 Kotlin files (counted $ktCount)")
 
@@ -47288,16 +47300,16 @@ run {
 private fun sectionV0120e(root: String) {
 println("== v0.12.0e: the attic — Queue #12 item 5 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.12.0e"),
         "attic: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 92 / 0.12.0e")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "attic: one new module (Attic.kt) — the tree is at " +
             "105 Kotlin files (counted $ktCount)")
 
@@ -48175,12 +48187,12 @@ private fun sectionV0120f(root: String) {
 
     // ---------- version ----------
     val manifest10 = read10("AndroidManifest.xml")
-    check(manifest10.contains("versionCode=\"125\"") &&
-        manifest10.contains("versionName=\"0.17.0a\""),
+    check(manifest10.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifest10.contains("versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 93 / 0.12.0f")
 
     // ---------- the spoiler wall ----------
-    val readme10 = read10("README.md")
+    val readme10 = read10("docs/CHANGELOG.md")
     val readmeStart10 = readme10.indexOf("### v0.12.0f")
     val readmeEnd10 = readme10.indexOf("### v0.12.0e")
     check(readmeStart10 >= 0 && readmeEnd10 > readmeStart10,
@@ -48253,16 +48265,16 @@ private fun sectionV0120g(root: String) {
 // the saturated save, Queue #12's state laid over
 // veteran X's body.
 println("== v0.12.0g: polish & performance pass #12 — the Queue #12 audit ==")
-val readme = File(root, "README.md").readText()
+val readme = File(root, "docs/CHANGELOG.md").readText()
 check(readme.contains("### v0.12.0g"),
     "v0.12.0g: the README carries this build's changelog entry")
 val manifestSrc = File(root, "AndroidManifest.xml").readText()
-check(manifestSrc.contains("android:versionCode=\"125\"") &&
-    manifestSrc.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 94 / 0.12.0g")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 134 && readme.contains("105 Kotlin files"),
+check(ktCount == 137 && readme.contains("105 Kotlin files"),
     "v0.12.0g: the source tree and its description agree — " +
         "105 Kotlin files (the audit added none) (counted $ktCount)")
 
@@ -49366,11 +49378,12 @@ run {
 
 // ---------- the tuning ledger, swept for Queue #12 ----------
 run {
-    val ledgerStart = readme.indexOf("## Tuning ledger")
-    val ledgerEnd = readme.indexOf("## Changelog")
+    val tuning = File(root, "docs/TUNING.md").readText()
+    val ledgerStart = tuning.indexOf("## Tuning ledger")
+    val ledgerEnd = tuning.length
     check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
         "ledger: the ledger section stands ahead of the changelog")
-    val ledger = readme.substring(ledgerStart, ledgerEnd)
+    val ledger = tuning.substring(ledgerStart, ledgerEnd)
     val q12Dials = listOf(
         // the paper grows up (v0.12.0a)
         "paperSummaryDue", "MAX_NEW_PER_DAY",
@@ -50264,16 +50277,16 @@ run {
 
 private fun sectionV0130a(root: String) {
     println("== v0.13.0a: the family page + home barks ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.13.0a"),
         "v0.13.0a: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 95 / 0.13.0a")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "v0.13.0a: no new module — the page and the barks live " +
             "in Family.kt/Barks.kt; the tree stands at 103 " +
             "Kotlin files (counted $ktCount)")
@@ -50716,7 +50729,7 @@ private fun sectionV0130a(root: String) {
 private fun sectionV0130b(root: String) {
     println("== v0.13.0b: the school dance ==")
     val srcDir = File(root, "src/com/hunt3r/southparktown")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
     val engineSrc = File(srcDir, "Engine.kt").readText()
     val danceSrc = File(srcDir, "Dance.kt").readText()
@@ -50728,8 +50741,8 @@ private fun sectionV0130b(root: String) {
     val sleepSrc = File(srcDir, "Sleepovers.kt").readText()
     val talkSrc = File(srcDir, "TalkGate.kt").readText()
 
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "v0.13.0b: the manifest carries this build (96 / 0.13.0b)")
     check(readme.contains("### v0.13.0b"),
         "v0.13.0b: the README carries this build's changelog entry")
@@ -50737,7 +50750,7 @@ private fun sectionV0130b(root: String) {
         "v0.13.0b: the README carries this build's status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "v0.13.0b: one new module (Dance.kt) — the tree stands " +
             "at 105 Kotlin files (found $ktCount)")
 
@@ -51430,7 +51443,7 @@ private fun sectionV0130b(root: String) {
 private fun sectionV0130c(root: String) {
     println("== v0.13.0c: the talent show ==")
     val srcDir = File(root, "src/com/hunt3r/southparktown")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
     val engineSrc = File(srcDir, "Engine.kt").readText()
     val talentSrc = File(srcDir, "Talent.kt").readText()
@@ -51442,8 +51455,8 @@ private fun sectionV0130c(root: String) {
     val movieSrc = File(srcDir, "MovieNights.kt").readText()
     val talkSrc = File(srcDir, "TalkGate.kt").readText()
 
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "v0.13.0c: the manifest carries this build (97 / 0.13.0c)")
     check(readme.contains("### v0.13.0c"),
         "v0.13.0c: the README carries this build's changelog entry")
@@ -51451,7 +51464,7 @@ private fun sectionV0130c(root: String) {
         "v0.13.0c: the README carries this build's status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 134 && readme.contains("105 Kotlin files"),
+    check(ktCount == 137 && readme.contains("105 Kotlin files"),
         "v0.13.0c: one new module (Talent.kt) — the tree " +
             "stands at 105 Kotlin files (found $ktCount)")
 
@@ -52458,7 +52471,7 @@ private fun sectionV0130c(root: String) {
 private fun sectionV0130d(root: String) {
     println("== v0.13.0d: the town parade ==")
     val srcDir = File(root, "src/com/hunt3r/southparktown")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
     val engineSrc = File(srcDir, "Engine.kt").readText()
     val paradeSrc = File(srcDir, "Parade.kt").readText()
@@ -52471,8 +52484,8 @@ private fun sectionV0130d(root: String) {
     val paperSrc = File(srcDir, "Newspaper.kt").readText()
     val talkSrc = File(srcDir, "TalkGate.kt").readText()
 
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "v0.13.0d: the manifest carries this build (98 / 0.13.0d)")
     check(readme.contains("### v0.13.0d"),
         "v0.13.0d: the README carries this build's changelog entry")
@@ -52480,7 +52493,7 @@ private fun sectionV0130d(root: String) {
         "v0.13.0d: the README carries this build's status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 134 && readme.contains("106 Kotlin files"),
+    check(ktCount == 137 && readme.contains("106 Kotlin files"),
         "v0.13.0d: one new module (Parade.kt) — the tree " +
             "stands at 106 Kotlin files (found $ktCount)")
 
@@ -53370,7 +53383,7 @@ private fun sectionV0130d(root: String) {
 private fun sectionV0130e(root: String) {
     println("== v0.13.0e: pen pals ==")
     val srcDir = File(root, "src/com/hunt3r/southparktown")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
     val penSrc = File(srcDir, "PenPals.kt").readText()
     val phoneSrc = File(srcDir, "Phone.kt").readText()
@@ -53381,8 +53394,8 @@ private fun sectionV0130e(root: String) {
     val viewSrc = File(srcDir, "GameView.kt").readText()
     val journalSrc = File(srcDir, "JournalActivity.kt").readText()
 
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "v0.13.0e: the manifest carries this build (99 / 0.13.0e)")
     check(readme.contains("### v0.13.0e") &&
         readme.contains("## Status — v0.13.0e"),
@@ -53390,7 +53403,7 @@ private fun sectionV0130e(root: String) {
             "entry and status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 134 && readme.contains("107 Kotlin files"),
+    check(ktCount == 137 && readme.contains("107 Kotlin files"),
         "v0.13.0e: one new module (PenPals.kt) — the tree " +
             "stands at 107 Kotlin files (found $ktCount)")
 
@@ -54764,12 +54777,14 @@ private fun sectionV0130f(root: String) {
 
     // ---------- version ----------
     val manifest11 = read11("AndroidManifest.xml")
-    check(manifest11.contains("versionCode=\"125\"") &&
-        manifest11.contains("versionName=\"0.17.0a\""),
+    check(manifest11.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifest11.contains("versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 100 / 0.13.0f")
 
     // ---------- the spoiler wall ----------
-    val readme11 = read11("README.md")
+    val readme11 = read11("docs/CHANGELOG.md")
+    val tuning = File(root, "docs/TUNING.md").readText()
+    val arch = File(root, "docs/ARCHITECTURE.md").readText()
     val readmeStart11 = readme11.indexOf("### v0.13.0f")
     val readmeEnd11 = readme11.indexOf("### v0.13.0e")
     check(readmeStart11 >= 0 && readmeEnd11 > readmeStart11,
@@ -54778,8 +54793,8 @@ private fun sectionV0130f(root: String) {
         readme11.substring(readmeStart11, readmeEnd11) else ""
     check(readmeEntry11.contains("voice ledger") && readmeEntry11.contains("BORROWED"),
         "voice: the changelog entry describes the ledger and its three readings")
-    check(readme11.contains("**Mystery #11 (v0.13.0f") &&
-        readme11.contains("`Mystery11.kt` (v0.13.0f: mystery #11"),
+    check(tuning.contains("**Mystery #11 (v0.13.0f") &&
+        arch.contains("`Mystery11.kt` (v0.13.0f: mystery #11"),
         "voice: the tuning ledger and the source layout both carry the eleventh case, structure only")
     val preReveal11 = StringBuilder()
     for (d in ch11) {
@@ -54845,16 +54860,16 @@ private fun sectionV0130g(root: String) {
 // lines are once-ever stamped now, in the play's
 // pattern — the hearing is the stamping.
 println("== v0.13.0g: polish & performance pass #13 — the Queue #13 audit ==")
-val readme = File(root, "README.md").readText()
+val readme = File(root, "docs/CHANGELOG.md").readText()
 check(readme.contains("### v0.13.0g"),
     "v0.13.0g: the README carries this build's changelog entry")
 val manifestSrc = File(root, "AndroidManifest.xml").readText()
-check(manifestSrc.contains("android:versionCode=\"125\"") &&
-    manifestSrc.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 101 / 0.13.0g")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 134 && readme.contains("108 Kotlin files"),
+check(ktCount == 137 && readme.contains("108 Kotlin files"),
     "v0.13.0g: the source tree and its description agree — " +
         "108 Kotlin files (the audit added none) (counted $ktCount)")
 
@@ -55471,11 +55486,12 @@ run {
 
 // ---------- the tuning ledger, swept for Queue #13 ----------
 run {
-    val ledgerStart = readme.indexOf("## Tuning ledger")
-    val ledgerEnd = readme.indexOf("## Changelog")
+    val tuning = File(root, "docs/TUNING.md").readText()
+    val ledgerStart = tuning.indexOf("## Tuning ledger")
+    val ledgerEnd = tuning.length
     check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
         "ledger: the ledger section stands ahead of the changelog")
-    val ledger = readme.substring(ledgerStart, ledgerEnd)
+    val ledger = tuning.substring(ledgerStart, ledgerEnd)
     val q13Dials = listOf(
         // the family page + home barks (v0.13.0a)
         "HOME_IDLE_CHANCE", "famChoreDoneBy",
@@ -56462,16 +56478,16 @@ run {
 private fun sectionV0140a(root: String) {
 println("== v0.14.0a: the reflections pass — Queue #14 item 1 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.14.0a"),
         "reflections: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 103 / 0.14.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("108 Kotlin files"),
+    check(ktCount == 137 && readme.contains("108 Kotlin files"),
         "reflections: no new module — two pure readers in " +
             "Sleepwear/Heroes and two drawing calls in GameView; " +
             "the tree stays at 108 Kotlin files (counted $ktCount)")
@@ -56778,20 +56794,21 @@ private fun sectionV0140c(root: String) {
 // FESTIVAL phone text, +1 to the winner's stars only for a
 // sat closing night, exactly one closing-night photograph.
 println("== v0.14.0c: the Bijou film festival — Queue #14 item 3 ==")
-val readme = File(root, "README.md").readText()
+val readme = File(root, "docs/CHANGELOG.md").readText()
+val tuning = File(root, "docs/TUNING.md").readText()
 check(readme.contains("### v0.14.0c"),
     "v0.14.0c: the README carries this build's changelog entry")
 check(readme.contains("## Status — v0.14.0c"),
     "v0.14.0c: the README carries this build's status section")
-check(readme.contains("The film festival (v0.14.0c"),
+check(tuning.contains("The film festival (v0.14.0c"),
     "v0.14.0c: the tuning ledger carries the festival's entry")
 val manifestSrc = File(root, "AndroidManifest.xml").readText()
-check(manifestSrc.contains("android:versionCode=\"125\"") &&
-    manifestSrc.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 104 / 0.14.0c")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 134 && readme.contains("110 Kotlin files"),
+check(ktCount == 137 && readme.contains("110 Kotlin files"),
     "v0.14.0c: the source tree and its description agree — " +
         "110 Kotlin files (Festival.kt joined) (counted $ktCount)")
 val festSrc = File(root,
@@ -57453,16 +57470,16 @@ run {
 private fun sectionV0140b(root: String) {
 println("== v0.14.0b: field trips — Queue #14 item 2 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.14.0b"),
         "trips: the README carries this build's changelog entry")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest itself carries 103 / 0.14.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("109 Kotlin files"),
+    check(ktCount == 137 && readme.contains("109 Kotlin files"),
         "trips: one new module (FieldTrip.kt) — the tree " +
             "stands at 109 Kotlin files (counted $ktCount)")
 }
@@ -57985,20 +58002,21 @@ private fun sectionV0140d(root: String) {
 // PLAYERBDAY phone text on the morning itself, and the
 // Journal 🎂 YOUR BIRTHDAY page.
 println("== v0.14.0d: your birthday — Queue #14 item 4 ==")
-val readme = File(root, "README.md").readText()
+val readme = File(root, "docs/CHANGELOG.md").readText()
+val tuning = File(root, "docs/TUNING.md").readText()
 check(readme.contains("### v0.14.0d"),
     "v0.14.0d: the README carries this build's changelog entry")
 check(readme.contains("## Status — v0.14.0d"),
     "v0.14.0d: the README carries this build's status section")
-check(readme.contains("Your birthday (v0.14.0d"),
+check(tuning.contains("Your birthday (v0.14.0d"),
     "v0.14.0d: the tuning ledger carries the birthday's entry")
 val manifestSrc = File(root, "AndroidManifest.xml").readText()
-check(manifestSrc.contains("android:versionCode=\"125\"") &&
-    manifestSrc.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 105 / 0.14.0d")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 134 && readme.contains("111 Kotlin files"),
+check(ktCount == 137 && readme.contains("111 Kotlin files"),
     "v0.14.0d: the source tree and its description agree — " +
         "111 Kotlin files (PlayerBirthday.kt joined) (counted $ktCount)")
 val pbSrc = File(root,
@@ -58649,20 +58667,21 @@ private fun sectionV0140e(root: String) {
 // phone text, no paper line, by stated design. An empty
 // crew stands the whole thing down politely.
 println("== v0.14.0e: the clubhouse — Queue #14 item 5 ==")
-val readme = File(root, "README.md").readText()
+val readme = File(root, "docs/CHANGELOG.md").readText()
+val tuning = File(root, "docs/TUNING.md").readText()
 check(readme.contains("### v0.14.0e"),
     "v0.14.0e: the README carries this build's changelog entry")
 check(readme.contains("## Status — v0.14.0e"),
     "v0.14.0e: the README carries this build's status section")
-check(readme.contains("The clubhouse (v0.14.0e"),
+check(tuning.contains("The clubhouse (v0.14.0e"),
     "v0.14.0e: the tuning ledger carries the clubhouse's entry")
 val manifestSrc = File(root, "AndroidManifest.xml").readText()
-check(manifestSrc.contains("android:versionCode=\"125\"") &&
-    manifestSrc.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 106 / 0.14.0e")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 134 && readme.contains("112 Kotlin files"),
+check(ktCount == 137 && readme.contains("112 Kotlin files"),
     "v0.14.0e: the source tree and its description agree — " +
         "112 Kotlin files (Clubhouse.kt joined) (counted $ktCount)")
 val clubSrc = File(root,
@@ -59735,12 +59754,14 @@ check(read12("src/com/hunt3r/southparktown/Finales.kt").contains("Mystery12.retu
 
 // ---------- version ----------
 val manifest12 = read12("AndroidManifest.xml")
-check(manifest12.contains("versionCode=\"125\"") &&
-    manifest12.contains("versionName=\"0.17.0a\""),
+check(manifest12.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifest12.contains("versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 107 / 0.14.0f")
 
 // ---------- the spoiler wall ----------
-val readme12 = read12("README.md")
+val readme12 = read12("docs/CHANGELOG.md")
+val tuning = File(root, "docs/TUNING.md").readText()
+val arch = File(root, "docs/ARCHITECTURE.md").readText()
 val readmeStart12 = readme12.indexOf("### v0.14.0f")
 val readmeEnd12 = readme12.indexOf("### v0.14.0e")
 check(readmeStart12 >= 0 && readmeEnd12 > readmeStart12,
@@ -59749,8 +59770,8 @@ val readmeEntry12 = if (readmeStart12 >= 0 && readmeEnd12 > readmeStart12)
     readme12.substring(readmeStart12, readmeEnd12) else ""
 check(readmeEntry12.contains("returns ledger") && readmeEntry12.contains("PLANTED"),
     "returns: the changelog entry describes the ledger and its three readings")
-check(readme12.contains("**Mystery #12 (v0.14.0f") &&
-    readme12.contains("`Mystery12.kt` (v0.14.0f: mystery #12") &&
+check(tuning.contains("**Mystery #12 (v0.14.0f") &&
+    arch.contains("`Mystery12.kt` (v0.14.0f: mystery #12") &&
     readme12.contains("## Status — v0.14.0f"),
     "returns: the tuning ledger, the source layout and the status sections all carry the twelfth case, structure only")
 val preReveal12 = StringBuilder()
@@ -59824,7 +59845,7 @@ private fun sectionV0140g(root: String) {
 println("== v0.14.0g: polish & performance #14 — the town, audited in the mirror ==")
 
 // ---------- shared fixtures ----------
-val readme = File(root, "README.md").readText()
+val readme = File(root, "docs/CHANGELOG.md").readText()
 fun setDayH(s: GameState, absDay: Int) {
     s.absDay = absDay
     val key = keyFromOrdinal(FairCalendar.ordinalOfAbsDay(absDay))
@@ -59851,8 +59872,8 @@ fun retiredCountH(st: GameState): Int = listOf(
 // ---------- the release shape ----------
 run {
     val manifest = File(root, "AndroidManifest.xml").readText()
-    check(manifest.contains("versionCode=\"125\"") &&
-        manifest.contains("versionName=\"0.17.0a\""),
+    check(manifest.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifest.contains("versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest carries 108 / 0.14.0g — " +
             "one code past the returns case")
     check(readme.contains("### v0.14.0g") &&
@@ -59863,7 +59884,7 @@ run {
         "src/com/hunt3r/southparktown")
         .listFiles()?.count {
             it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134,
+    check(ktCount == 137,
         "release: polish adds no module — the tree " +
             "stands at 113 Kotlin files (counted $ktCount)")
 }
@@ -60699,11 +60720,12 @@ run {
 
 // ---------- the tuning ledger, swept for Queue #14 ----------
 run {
-    val ledgerStart = readme.indexOf("## Tuning ledger")
-    val ledgerEnd = readme.indexOf("## Changelog")
+    val tuning = File(root, "docs/TUNING.md").readText()
+    val ledgerStart = tuning.indexOf("## Tuning ledger")
+    val ledgerEnd = tuning.length
     check(ledgerStart >= 0 && ledgerEnd > ledgerStart,
         "ledger: the ledger section stands ahead of the changelog")
-    val ledger = readme.substring(ledgerStart, ledgerEnd)
+    val ledger = tuning.substring(ledgerStart, ledgerEnd)
     val q14Dials = listOf(
         // the reflections pass (v0.14.0a) — readers over
         // the owners' own constants, no dials of its own
@@ -61831,17 +61853,17 @@ run {
 private fun sectionV0150a(root: String) {
 println("== v0.15.0a: the preview pass — Queue #15 item 1 ==")
 run {
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("### v0.15.0a") &&
         readme.contains("## Status — v0.15.0a"),
         "preview: the README carries this build's changelog + status")
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "preview: the manifest itself carries 110 / 0.15.0b")
     val ktCount = File(root, "src/com/hunt3r/southparktown")
         .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134 && readme.contains("114 Kotlin files"),
+    check(ktCount == 137 && readme.contains("114 Kotlin files"),
         "preview: one new module (LiveLook.kt) — the tree " +
             "stands at 114 Kotlin files (counted $ktCount)")
     val llSrc = File(root,
@@ -62189,7 +62211,7 @@ run {
 private fun sectionV0150b(root: String) {
     println("== v0.15.0b: pen pals — the visit, returned ==")
     val srcDir = File(root, "src/com/hunt3r/southparktown")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
     val penSrc = File(srcDir, "PenPals.kt").readText()
     val gameSrc = File(srcDir, "GameActivity.kt").readText()
@@ -62197,8 +62219,8 @@ private fun sectionV0150b(root: String) {
     val paperSrc = File(srcDir, "Newspaper.kt").readText()
     val talkSrc = File(srcDir, "TalkGate.kt").readText()
 
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "return trip: the manifest carries this build " +
             "(110 / 0.15.0b)")
     check(readme.contains("### v0.15.0b") &&
@@ -62207,7 +62229,7 @@ private fun sectionV0150b(root: String) {
             "changelog entry and status section")
     val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
         ?.size ?: 0
-    check(ktCount == 134 && readme.contains("114 Kotlin files"),
+    check(ktCount == 137 && readme.contains("114 Kotlin files"),
         "return trip: no new module — PenPals.kt grows " +
             "the season; the tree stands at 114 Kotlin " +
             "files (found $ktCount)")
@@ -62639,15 +62661,15 @@ private fun sectionV0150b(root: String) {
 private fun sectionV0150c(root: String) {
     println("== v0.15.0c: the visual overhaul — paper scenes, the kid on screen, the bus ==")
     val srcDir = File(root, "src/com/hunt3r/southparktown")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
     val gv = File(srcDir, "GameView.kt").readText()
     val sceneSrc = File(srcDir, "SceneArt.kt").readText()
     val gaSrc = File(srcDir, "GameActivity.kt").readText()
     val busSrc = File(srcDir, "BusNetwork.kt").readText()
 
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "overhaul: the manifest carries this build (111 / 0.15.0c)")
     check(readme.contains("### v0.15.0c") &&
         readme.contains("## Status — v0.15.0c"),
@@ -62980,7 +63002,7 @@ private fun sectionV0150c(root: String) {
 
     // ---------- the wiring ----------
     run {
-        check(gv.contains("PaperWalk.step(pwalk") &&
+        check(gv.contains("PaperWalk.stepClamped(pwalk") &&
             gv.contains("LiveLook.playerLook(st)") &&
             gv.contains("KidArt.drawPlayerAvatar") &&
             gv.contains("drawTraffic(c, st, loc, worldW, h, seed)") &&
@@ -63017,15 +63039,15 @@ private fun sectionV0150c(root: String) {
 private fun sectionV0150d(root: String) {
     println("== v0.15.0d: the overhaul correction — one scale, a walkable band, a bus that runs, the baseline town ==")
     val srcDir = File(root, "src/com/hunt3r/southparktown")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
     val gv = File(srcDir, "GameView.kt").readText()
     val sceneSrc = File(srcDir, "SceneArt.kt").readText()
     val iaSrc = File(srcDir, "InteriorArt.kt").readText()
     val paperSrc = File(srcDir, "PaperScene.kt").readText()
 
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "correction: the manifest carries this build (112 / 0.15.0d)")
     check(readme.contains("### v0.15.0d") &&
         readme.contains("## Status — v0.15.0d"),
@@ -63435,7 +63457,7 @@ private fun gaContainsSchoolBusWiring(root: String): Boolean {
 // ================= v0.15.0e =================
 private fun sectionV0150e(root: String) {
     println("== v0.15.0e: the logo build — the approved sign, on the launcher and the title ==")
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     val manifestSrc = File(root, "AndroidManifest.xml").readText()
 
     fun sha256Of(f: File): String {
@@ -63459,8 +63481,8 @@ private fun sectionV0150e(root: String) {
     val logoHash = "64be1865d0010f8e2bb0ee66c0f03f23bbff89ddbed473cb2c42b99e2ef6405e"
     val oldIconHash = "7ab73078e1262bbe5648202b60e868736b9e1e8b195be996a1b710568670cac3"
 
-    check(manifestSrc.contains("android:versionCode=\"125\"") &&
-        manifestSrc.contains("android:versionName=\"0.17.0a\""),
+    check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "logo: the manifest carries this build (113 / 0.15.0e)")
     check(readme.contains("### v0.15.0e") &&
         readme.contains("## Status — v0.15.0e"),
@@ -63531,20 +63553,21 @@ fun gState(): GameState {
     engF.createPlayer(s, "Walker", DEFAULT_APPEARANCE)
     return s
 }
-val readme = File(root, "README.md").readText()
+val readme = File(root, "docs/CHANGELOG.md").readText()
+val tuning = File(root, "docs/TUNING.md").readText()
 check(readme.contains("### v0.15.0f"),
     "v0.15.0f: the README carries this build's changelog entry")
 check(readme.contains("## Status — v0.15.0f"),
     "v0.15.0f: the README carries this build's status section")
-check(readme.contains("The gallery show (v0.15.0f"),
+check(tuning.contains("The gallery show (v0.15.0f"),
     "v0.15.0f: the tuning ledger carries the show's entry")
 val manifestSrc = File(root, "AndroidManifest.xml").readText()
-check(manifestSrc.contains("android:versionCode=\"125\"") &&
-    manifestSrc.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrc.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrc.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 114 / 0.15.0f")
 val ktCount = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCount == 134,
+check(ktCount == 137,
     "v0.15.0f: the source tree holds 119 Kotlin files " +
         "(Gallery.kt joined) (counted $ktCount)")
 val galSrc = File(root,
@@ -64294,20 +64317,21 @@ run {
 private fun sectionV0150g(root: String) {
 println("== v0.15.0g: THE SCALE & SPACE BUILD — Lucky's playtest round 2 ==")
 val engG = Engine()
-val readmeG = File(root, "README.md").readText()
+val readmeG = File(root, "docs/CHANGELOG.md").readText()
+val tuning = File(root, "docs/TUNING.md").readText()
 check(readmeG.contains("### v0.15.0g"),
     "v0.15.0g: the README carries this build's changelog entry")
 check(readmeG.contains("## Status — v0.15.0g"),
     "v0.15.0g: the README carries this build's status section")
-check(readmeG.contains("The scale & space build (v0.15.0g"),
+check(tuning.contains("The scale & space build (v0.15.0g"),
     "v0.15.0g: the tuning ledger carries the build's entry")
 val manifestG = File(root, "AndroidManifest.xml").readText()
-check(manifestG.contains("android:versionCode=\"125\"") &&
-    manifestG.contains("android:versionName=\"0.17.0a\""),
+check(manifestG.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestG.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 115 / 0.15.0g")
 val ktCountG = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCountG == 134,
+check(ktCountG == 137,
     "v0.15.0g: the source tree holds 121 Kotlin files " +
         "(CastHomes.kt + FigureCompose.kt joined) (counted $ktCountG)")
 val gvG = File(root,
@@ -64869,20 +64893,21 @@ fun hState(): GameState {
     engH.createPlayer(s, "Walker", DEFAULT_APPEARANCE)
     return s
 }
-val readmeH = File(root, "README.md").readText()
+val readmeH = File(root, "docs/CHANGELOG.md").readText()
+val tuning = File(root, "docs/TUNING.md").readText()
 check(readmeH.contains("### v0.15.0h"),
     "v0.15.0h: the README carries this build's changelog entry")
 check(readmeH.contains("## Status — v0.15.0h"),
     "v0.15.0h: the README carries this build's status section")
-check(readmeH.contains("The apprenticeships (v0.15.0h"),
+check(tuning.contains("The apprenticeships (v0.15.0h"),
     "v0.15.0h: the tuning ledger carries the apprenticeships' entry")
 val manifestSrcH = File(root, "AndroidManifest.xml").readText()
-check(manifestSrcH.contains("android:versionCode=\"125\"") &&
-    manifestSrcH.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrcH.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrcH.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 116 / 0.15.0h")
 val ktCountH = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCountH == 134,
+check(ktCountH == 137,
     "v0.15.0h: the source tree holds 122 Kotlin files " +
         "(Apprenticeships.kt joined) (counted $ktCountH)")
 val apprSrc = File(root,
@@ -65409,20 +65434,21 @@ fun partyYear(md: String, householdId: String):
     }
     return null
 }
-val readmeI = File(root, "README.md").readText()
+val readmeI = File(root, "docs/CHANGELOG.md").readText()
+val tuning = File(root, "docs/TUNING.md").readText()
 check(readmeI.contains("### v0.15.0i"),
     "v0.15.0i: the README carries this build's changelog entry")
 check(readmeI.contains("## Status — v0.15.0i"),
     "v0.15.0i: the README carries this build's status section")
-check(readmeI.contains("The shared birthdays, whole (v0.15.0i"),
+check(tuning.contains("The shared birthdays, whole (v0.15.0i"),
     "v0.15.0i: the tuning ledger carries the shared birthdays' entry")
 val manifestSrcI = File(root, "AndroidManifest.xml").readText()
-check(manifestSrcI.contains("android:versionCode=\"125\"") &&
-    manifestSrcI.contains("android:versionName=\"0.17.0a\""),
+check(manifestSrcI.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+    manifestSrcI.contains("android:versionName=\"${Version.VERSION_NAME}\""),
     "release: the manifest itself carries 117 / 0.15.0i")
 val ktCountI = File(root, "src/com/hunt3r/southparktown")
     .listFiles()?.count { it.isFile && it.name.endsWith(".kt") } ?: -1
-check(ktCountI == 134,
+check(ktCountI == 137,
     "v0.15.0i: no new module — the work rides inside " +
         "Birthdays, Phone, Engine, Newspaper and " +
         "PlayerBirthday (counted $ktCountI)")
@@ -66669,7 +66695,7 @@ private fun sectionV0150j(root: String) {
         for (c in items13) Mystery13.grantClue13(sMid, c.id)
         corpus.append(Mystery13.boardLines13(sMid)
             .joinToString("\n"))
-        val readme13 = read13("README.md")
+        val readme13 = read13("docs/CHANGELOG.md")
         val entryStart = readme13.indexOf("### v0.15.0j")
         val entryEnd = readme13.indexOf("### v0.15.0i")
         corpus.append(readme13.substring(entryStart, entryEnd))
@@ -66916,10 +66942,12 @@ private fun sectionV0150j(root: String) {
                 "the town's own records alone — no platform " +
                 "imports, no borrowed systems")
         val manifest = read13("AndroidManifest.xml")
-        check(manifest.contains("versionCode=\"125\"") &&
-            manifest.contains("versionName=\"0.17.0a\""),
+        check(manifest.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+            manifest.contains("versionName=\"${Version.VERSION_NAME}\""),
             "release: the manifest itself carries 118 / 0.15.0j")
-        val readme = read13("README.md")
+        val readme = read13("docs/CHANGELOG.md")
+        val tuning = File(root, "docs/TUNING.md").readText()
+        val arch = File(root, "docs/ARCHITECTURE.md").readText()
         val eStart = readme.indexOf("### v0.15.0j")
         val eEnd = readme.indexOf("### v0.15.0i")
         check(eStart >= 0 && eEnd > eStart,
@@ -66932,8 +66960,8 @@ private fun sectionV0150j(root: String) {
             "exhibition README: the changelog entry " +
                 "describes the provenance chain and its " +
                 "three readings")
-        check(readme.contains("**Mystery #13 (v0.15.0j") &&
-            readme.contains("`Mystery13.kt` (v0.15.0j: mystery #13") &&
+        check(tuning.contains("**Mystery #13 (v0.15.0j") &&
+            arch.contains("`Mystery13.kt` (v0.15.0j: mystery #13") &&
             readme.contains("## Status — v0.15.0j"),
             "exhibition README: the tuning ledger, the " +
                 "source layout and the status sections all " +
@@ -66982,7 +67010,7 @@ private fun sectionV0150k(root: String) {
 println("== v0.15.0k: polish & performance #15 — the town, seen clearly, audited ==")
 
 // ---------- shared fixtures ----------
-val readmeK = File(root, "README.md").readText()
+val readmeK = File(root, "docs/CHANGELOG.md").readText()
 fun srcK(rel: String) = File(root, rel).readText()
 fun setDayK(s: GameState, absDay: Int) {
     s.absDay = absDay
@@ -67004,8 +67032,8 @@ fun auditStateK(seed: Long): Pair<Engine, GameState> {
 // ---------- the release shape ----------
 run {
     val manifest = File(root, "AndroidManifest.xml").readText()
-    check(manifest.contains("versionCode=\"125\"") &&
-        manifest.contains("versionName=\"0.17.0a\""),
+    check(manifest.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifest.contains("versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest carries 119 / 0.15.0k — " +
             "one code past the exhibition case")
     check(readmeK.contains("### v0.16.0a") &&
@@ -67016,7 +67044,7 @@ run {
         "src/com/hunt3r/southparktown")
         .listFiles()?.count {
             it.isFile && it.name.endsWith(".kt") } ?: -1
-    check(ktCount == 134,
+    check(ktCount == 137,
         "release: polish adds no module — the tree " +
             "stands at 123 Kotlin files (counted $ktCount)")
 }
@@ -67950,11 +67978,11 @@ run {
     val kaA = java.io.File("src/com/hunt3r/southparktown/KidArt.kt").readText()
     val saA = java.io.File("src/com/hunt3r/southparktown/SceneArt.kt").readText()
     val manifestA = java.io.File("AndroidManifest.xml").readText()
-    val readmeA = java.io.File("README.md").readText()
+    val readmeA = java.io.File("docs/CHANGELOG.md").readText()
 
     // ---- release identity ----
-    check(manifestA.contains("android:versionCode=\"125\"") &&
-        manifestA.contains("android:versionName=\"0.17.0a\""),
+    check(manifestA.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestA.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "release: the manifest carries 121 / 0.16.0b — the " +
             "correction build on Queue #16's base (supersedes " +
             "120 / 0.16.0a at every historical pin, reason: the " +
@@ -68456,11 +68484,16 @@ run {
         "v0.16.0b (d): the hall dome seats clear of the " +
             "facade sign")
 
-    // (c) the player keeps his own ground, and the snow
-    // lies on the head's own derived crown.
-    check(gvB.contains("placed.fh * 0.34f"),
-        "v0.16.0b (c): cast composition reserves the " +
-            "player's ground at his row")
+    // (c) the snow lies on the head's own derived crown.
+    // (The ground-reservation half of this pin is
+    // SUPERSEDED by v0.17.0b: the reservation it asserted
+    // — dealing cast around the player on "placed.fh *
+    // 0.34f" — was the playtest's shove. It is removed
+    // whole; sectionV0170b pins its absence and the
+    // feet-ellipse clamp that replaced it.)
+    check(!gvB.contains("placed.fh * 0.34f"),
+        "v0.16.0b (c) superseded by v0.17.0b: the player's " +
+            "ground reservation is gone from the draw")
     check(gvB.contains("0.5f - (d.hy - boxH / 2f) / boxH"),
         "v0.16.0b (c): the snow arc rides the figure's " +
             "own derived head ellipse")
@@ -68503,8 +68536,8 @@ run {
     // reason: the version bump itself, as before)
     val manifestB = java.io.File("AndroidManifest.xml")
         .readText()
-    check(manifestB.contains("versionCode=\"125\"") &&
-        manifestB.contains("versionName=\"0.17.0a\""),
+    check(manifestB.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestB.contains("versionName=\"${Version.VERSION_NAME}\""),
         "v0.16.0b: the manifest carries code 121 / " +
             "0.16.0b")
 }
@@ -68800,7 +68833,7 @@ run {
     check(sgSrc.contains("object SheetGen"),
         "v0.16.0c sheets: the games-style sheet generator " +
             "renders from the game's own specs")
-    val readmeC = java.io.File("README.md").readText()
+    val readmeC = java.io.File("docs/CHANGELOG.md").readText()
     check(readmeC.contains("south-park-town-v0160c-linux"),
         "v0.16.0c linux: the README names the Linux build")
 
@@ -68809,8 +68842,8 @@ run {
     // reason: the version bump itself, as before)
     val manifestC = java.io.File("AndroidManifest.xml")
         .readText()
-    check(manifestC.contains("versionCode=\"125\"") &&
-        manifestC.contains("versionName=\"0.17.0a\""),
+    check(manifestC.contains("versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestC.contains("versionName=\"${Version.VERSION_NAME}\""),
         "v0.16.0d: the manifest carries code 123 / 0.16.0d")
 }
 }
@@ -69031,10 +69064,10 @@ private fun sectionV0160d(root: String) {
 
     // ---------- release identity ----------
     val manifestD = File(root, "AndroidManifest.xml").readText()
-    check(manifestD.contains("android:versionCode=\"125\"") &&
-        manifestD.contains("android:versionName=\"0.17.0a\""),
+    check(manifestD.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestD.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "v0.16.0d: the manifest carries code 123 / 0.16.0d")
-    val readmeD = File(root, "README.md").readText()
+    val readmeD = File(root, "docs/CHANGELOG.md").readText()
     check(readmeD.contains("## Status — v0.16.0d") &&
         readmeD.contains("south-park-town-v0160d-linux") &&
         readmeD.contains("PARTIAL #14 CLOSED"),
@@ -69052,8 +69085,8 @@ private fun sectionV0160e(root: String) {
 
     // ---- release identity ----
     val manifestE = File(root, "AndroidManifest.xml").readText()
-    check(manifestE.contains("android:versionCode=\"125\"") &&
-        manifestE.contains("android:versionName=\"0.17.0a\""),
+    check(manifestE.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifestE.contains("android:versionName=\"${Version.VERSION_NAME}\""),
         "v0.16.0e: the manifest carries code 124 / 0.16.0e")
 
     // ---- Part 1: the re-dress painters exist; the flat ones are gone ----
@@ -69251,7 +69284,7 @@ private fun sectionV0160e(root: String) {
             "body state")
 
     // ---- README carries the combined changelog ----
-    val readmeE = File(root, "README.md").readText()
+    val readmeE = File(root, "docs/CHANGELOG.md").readText()
     check(readmeE.contains("## Status — v0.16.0e") &&
         readmeE.contains("south-park-town-v0160e-linux"),
         "v0.16.0e: the README carries this build's changelog")
@@ -69835,9 +69868,488 @@ private fun sectionV0170a(root: String) {
         "v0.17.0a §10: set piece ids are unique")
 
     // ===== README =====
-    val readme = File(root, "README.md").readText()
+    val readme = File(root, "docs/CHANGELOG.md").readText()
     check(readme.contains("## Status — v0.17.0a") &&
         readme.contains("134 Kotlin files"),
         "v0.17.0a: the README carries this build's changelog " +
             "and the tree's new count (Rig.kt joined)")
+}
+
+/** v0.17.0b: the PLAYTEST FIX BUILD (Phase 0.5). v0.17.0a
+ *  shipped green here and failed in Lucky's hands — "they
+ *  all looked the same and the world is more broken than
+ *  ever" — so this section pins the three defect families
+ *  at the level the playtest saw them: the walk itself,
+ *  the drawn interior, the resolved faces. A: the feet
+ *  ellipse (the only hitbox). B: the walk sim — a player
+ *  walking through a stationary crowd displaces NO ONE,
+ *  ever. C: the draw-layer shove is gone from the source. */
+private fun sectionV0170b(root: String) {
+    println("== v0.17.0b: playtest fixes (collision / interiors / variety) ==")
+
+    // ===== A: the feet ellipse is the only hitbox =====
+    check(FigureCompose.FEET_RX_OVER_FH == 0.30f,
+        "v0.17.0b A: feet half-width is the drawn shadow's " +
+            "0.30 of height")
+    check(FigureCompose.FEET_RY_OVER_FH == 0.10f,
+        "v0.17.0b A: feet half-depth is 0.10 of height — " +
+            "under half the tightest row pitch (0.54)")
+    // toddler / kid / adult heights (the ScaleContract's
+    // kept measured values at a 100-unit kid height)
+    for ((fh, rx) in listOf(80f to 24f, 100f to 30f,
+        144f to 43.2f)) {
+        close(FigureCompose.feetRx(fh), rx, 0.01f,
+            "v0.17.0b A: feetRx at fh=$fh is $rx")
+        close(FigureCompose.feetRy(fh), fh * 0.10f, 0.01f,
+            "v0.17.0b A: feetRy at fh=$fh")
+    }
+    val rowA = FigureCompose.Feet("A", 500f, 800f, 340f)
+    check(!FigureCompose.feetTouch(500f, 800f + 340f * 0.54f,
+        340f, rowA),
+        "v0.17.0b A: figures a full row apart never touch, " +
+            "even standing on the same x")
+    check(FigureCompose.feetTouch(700f, 800f, 340f, rowA),
+        "v0.17.0b A: same line, 200px apart, two 340px " +
+            "figures' feet overlap (diameter 204)")
+    check(!FigureCompose.feetTouch(710f, 800f, 340f, rowA),
+        "v0.17.0b A: same line, 210px apart, feet clear")
+    val edgeX = FigureCompose.feetEdgeX(400f, 800f, 340f,
+        rowA)
+    check(edgeX < 500f,
+        "v0.17.0b A: the edge rest is on the approach side")
+    close(FigureCompose.feetDist2(edgeX, 800f, 340f, rowA),
+        1f, 0.01f,
+        "v0.17.0b A: the edge rest sits exactly ON the " +
+            "ellipse (normalized distance 1)")
+
+    // ===== B: the walk sim — nobody moves but you =====
+    val worldW = 2000f
+    val hh = 1280f
+    val band = 0.62f
+    val feetLine = WalkBand.feetY(band, hh, false)
+    val fhBase = 340f / WalkBand.depthScale(band)
+    val crowd = listOf(700f, 850f, 1000f, 1150f, 1300f)
+        .mapIndexed { i, cx ->
+            FigureCompose.Feet("Kid$i", cx, feetLine, 340f)
+        }
+    val crowdBefore = crowd.map { it.copy() }
+    // (1) head-on, same band, target past the crowd: the
+    // player presses to a stop at the first feet edge —
+    // and the crowd is byte-identical afterwards
+    var st1 = PaperWalk.tapGround(
+        PaperWalk.State(x = 0.20f, band = band), 0.90f, band)
+    var steps = 0
+    while (st1.walking && steps < 400) {
+        st1 = PaperWalk.stepClamped(st1, 0.05f, 22f, crowd,
+            worldW, hh, false, fhBase).first
+        steps++
+        check(st1.x * worldW < 700f,
+            "v0.17.0b B: the player never crosses the " +
+                "first blocker's center plane (step $steps)")
+    }
+    check(!st1.walking,
+        "v0.17.0b B: pressed against the crowd, the walk " +
+            "ends instead of shoving through")
+    close(FigureCompose.feetDist2(st1.x * worldW,
+        feetLine, 340f, crowd[0]), 1f, 0.03f,
+        "v0.17.0b B: the stop rests ON the feet edge")
+    check(crowd == crowdBefore,
+        "v0.17.0b B: every cast position byte-identical " +
+            "after the head-on walk")
+    // (2) a band-changing walk slides along the row and
+    // through: depth progress pulls the player clear
+    var st2 = PaperWalk.tapGround(
+        PaperWalk.State(x = 0.20f, band = band), 0.85f, 0.22f)
+    steps = 0
+    while (st2.walking && steps < 900) {
+        st2 = PaperWalk.stepClamped(st2, 0.05f, 22f, crowd,
+            worldW, hh, false, fhBase).first
+        steps++
+    }
+    check(st2.x > 0.80f,
+        "v0.17.0b B: the band-changing walk slides along " +
+            "the crowd and arrives past it (x=${st2.x})")
+    check(crowd == crowdBefore,
+        "v0.17.0b B: cast identical after the slide")
+    // (3) walking up to one kid fires the talk at feet
+    // contact — and the kid never moves
+    val solo = listOf(FigureCompose.Feet("Bebe", 1000f,
+        feetLine, 340f))
+    var st3 = PaperWalk.tapTarget(
+        PaperWalk.State(x = 0.20f, band = band),
+        "kid", "Bebe", 0.50f, band)
+    var fired3: PaperWalk.Pending? = null
+    steps = 0
+    while (st3.walking && steps < 400) {
+        val r = PaperWalk.stepClamped(st3, 0.05f, 22f,
+            solo, worldW, hh, false, fhBase)
+        st3 = r.first
+        if (r.second != null) { fired3 = r.second; break }
+        steps++
+    }
+    check(fired3?.id == "Bebe",
+        "v0.17.0b B: walking up to a kid fires the talk " +
+            "at feet contact")
+    close(FigureCompose.feetDist2(st3.x * worldW,
+        feetLine, 340f, solo[0]), 1f, 0.03f,
+        "v0.17.0b B: the talk stop rests on the feet edge")
+    check(solo[0] == FigureCompose.Feet("Bebe", 1000f,
+        feetLine, 340f),
+        "v0.17.0b B: Bebe never moved")
+
+    // ===== C: the shove is gone from the draw =====
+    val gvSrc = File(root,
+        "src/com/hunt3r/southparktown/GameView.kt").readText()
+    check(!gvSrc.contains("kx = px +"),
+        "v0.17.0b C: no draw path deals a crowd figure " +
+            "to the player's pitch edge")
+    check(!gvSrc.contains("cx = px +"),
+        "v0.17.0b C: no draw path deals a traveler to " +
+            "the player's pitch edge")
+    check(gvSrc.contains("PaperWalk.stepClamped"),
+        "v0.17.0b C: the walk loop runs the contact clamp")
+
+    // ===== D: crowd variety — the stack resolves the spec =====
+    // (Bible Parts 7–9: hair mass contains the dome sector it
+    // covers; the v0.17.0a messy hairline rose up to 7 units
+    // over its base and left bare skin domes — the probe that
+    // found it read Randy, Father Maxi, Ned and Adler's crowns
+    // as skin. "fringe" and "bald" are the lawful skin domes.)
+    // the crown probe: shallow for buzz (its cap hugs the
+    // skull), a third down the dome otherwise — deep enough
+    // to sit below any perch hat, above every hairline
+    fun crownY(spec: SheetSpec, d: FigureGeometry.Derived) =
+        d.hy - d.hry + if (spec.hairStyle == "buzz") 2.0f
+        else d.hry * 0.30f
+    val domeBad = mutableListOf<String>()
+    val lawfulBad = mutableListOf<String>()
+    for ((name, spec) in KidArt.SHEETS) {
+        if (HeadStack.hatCoversHair(spec.hatId)) continue
+        // Towelie has his own renderer and no head stack at
+        // all (Bible Part 10's one exemption)
+        if (spec.special == "towel") continue
+        val d = FigureGeometry.derive(spec)
+        val crown = HeadStack.colorAt(spec, d.hx, crownY(spec, d))
+        when {
+            // Kenny's parka hood IS his head — Part 7's one
+            // lawful covered head; its crown reads parka
+            spec.special == "kenny_parka" ->
+                if (crown == null || !crown.equals(spec.top, true))
+                    lawfulBad.add(name)
+            spec.hairStyle == "bald" || spec.hairStyle == "fringe" ->
+                if (crown == null || !crown.equals(spec.skin, true))
+                    lawfulBad.add(name)
+            // buzz hugs the skull in a thin cap; under a
+            // perch hat (Gerald's yarmulke) the crown probe
+            // reads the hat — the law is covered, never skin
+            // (exact buzz coverage is pinned synthetically)
+            spec.hairStyle == "buzz" ->
+                if (crown == null || crown.equals(spec.skin, true))
+                    domeBad.add(name)
+            else ->
+                if (crown == null || !crown.equals(spec.hairColor, true))
+                    domeBad.add(name)
+        }
+    }
+    check(domeBad.isEmpty(),
+        "v0.17.0b D: every uncovered haired cast member's crown " +
+            "reads their own hair color (offenders: $domeBad)")
+    check(lawfulBad.isEmpty(),
+        "v0.17.0b D: bald and balding-fringe domes stay honestly " +
+            "skin (offenders: $lawfulBad)")
+    // the fixed mechanism, style by style, kid and adult frames
+    val wornStyles = KidArt.SHEETS.values.map { it.hairStyle }
+        .toSet() + "shaggy"
+    val synthBad = mutableListOf<String>()
+    for (style in wornStyles) {
+        if (style == "bald" || style == "fringe") continue
+        for (tall in listOf(false, true)) {
+            val spec = SheetSpec(hairStyle = style,
+                hairColor = "#3a2a1a", tall = tall)
+            val d = FigureGeometry.derive(spec)
+            val crown = HeadStack.colorAt(spec, d.hx, crownY(spec, d))
+            if (crown == null || !crown.equals("#3a2a1a", true))
+                synthBad.add("$style/tall=$tall")
+        }
+    }
+    check(synthBad.isEmpty(),
+        "v0.17.0b D: every worn hair style covers its dome on " +
+            "kid and adult frames (offenders: $synthBad)")
+    // the cast's resolved variety, counted — no mass defaulting
+    val openHair = KidArt.SHEETS.values.filter {
+        it.hairStyle != "bald" && !HeadStack.hatCoversHair(it.hatId)
+    }
+    val pairCounts = openHair.groupingBy {
+        "${it.hairStyle}|${it.hairColor.lowercase()}"
+    }.eachCount()
+    val tripleCounts = openHair.groupingBy {
+        "${it.hairStyle}|${it.hairColor.lowercase()}|${it.face}"
+    }.eachCount()
+    check(pairCounts.size >= 72,
+        "v0.17.0b D: distinct resolved (style, color) pairs " +
+            "across the open-haired cast >= 72 (saw ${pairCounts.size})")
+    check(tripleCounts.size >= 75,
+        "v0.17.0b D: distinct resolved (style, color, face) " +
+            ">= 75 (saw ${tripleCounts.size})")
+    check((pairCounts.values.maxOrNull() ?: 0) <= 4,
+        "v0.17.0b D: no single (style, color) takes over the " +
+            "cast (largest group ${pairCounts.values.maxOrNull()})")
+    val faceKinds = KidArt.SHEETS.values.map { it.face }.toSet()
+    check(faceKinds.size >= 8,
+        "v0.17.0b D: the cast carries >= 8 distinct resting " +
+            "faces (saw ${faceKinds.size})")
+    val normalShare = KidArt.SHEETS.values.count {
+        it.face == "normal" }.toFloat() / KidArt.SHEETS.size
+    check(normalShare <= 0.86f,
+        "v0.17.0b D: the plain resting face stays a majority, " +
+            "not a monoculture (share $normalShare)")
+
+    // ===== E: the six interior artifacts, pinned at source =====
+    check(!gvSrc.contains("c.drawText(layout.title"),
+        "v0.17.0b E(a): the interior painter never draws the " +
+            "layout title (red label + parchment sign only)")
+    check(!gvSrc.contains("rect.bottom + 4)") &&
+        !File(root, "src/com/hunt3r/southparktown/DialogueSheet.kt")
+            .readText().contains("rect.bottom + 4)"),
+        "v0.17.0b E(d): no dialogue-bubble shadow overhangs " +
+            "its body by +4 (the gray blob)")
+    val iaSrc = File(root,
+        "src/com/hunt3r/southparktown/InteriorArt.kt").readText()
+    check(iaSrc.contains("rr(0.01f, 0.26f, 0.19f, 0.44f") &&
+        !iaSrc.contains("rr(0.40f, 0.26f, 0.58f, 0.44f"),
+        "v0.17.0b E(b): the cubby row stands in the hall span, " +
+            "not on the cafeteria's wall panels")
+    check(!iaSrc.contains(
+        "\"#d43d2a\", \"#2a6fd4\", \"#2a9a4a\", \"#e8c53a\"") &&
+        !iaSrc.contains("0.30f, 0.57f, Paper.fillPaint(\"#d43d2a\")"),
+        "v0.17.0b E(c): no flat bright-primary book blocks on " +
+            "shelves or the desk")
+    val engB = Engine(42)
+    val stB = GameState()
+    engB.dropLitter(stB, "Elementary", true, "old_sock", "pin")
+    check(stB.litter.isEmpty(),
+        "v0.17.0b E(e): an indoor litter drop never lands")
+    engB.dropLitter(stB, "MainStreet", false, "old_sock", "pin")
+    check(stB.litter.size == 1,
+        "v0.17.0b E(e): outdoor litter still drops")
+    check(gvSrc.contains("if (inside) emptyList()"),
+        "v0.17.0b E(e): indoor litter is never drawn")
+    check(gvSrc.contains("v0.17.0b #18 POCKET FIDGETS") &&
+        !gvSrc.contains("glyph(g, p.x + p.fh * 0.30f, headY - 8"),
+        "v0.17.0b E(f): habit glyphs draw in the figure's own " +
+            "z-slot, never in the flat post-pass (forehead dots)")
+}
+
+/** v0.18.0a section: RESTRUCTURE PHASE 0 — BEDROCK.
+ *  Structural only, zero behavior change: (a) the purity-wall
+ *  scan (Part 3.1 with the C1 correction — android.graphics.* is
+ *  the drawing vocabulary, allowed anywhere; every other android
+ *  package is confined to the named platform allowlist, plus
+ *  Paper.kt's single Resources exception; Prefs must sit OFF the
+ *  wall entirely); (b) version identity derived from Version.kt
+ *  (D7); (c) the SaveStore/codec split (Part 3.6) — a pre-split
+ *  veteran fixture loads whole through the new store-backed
+ *  Prefs and re-encodes byte-identically; (d) the README split
+ *  into docs/ (D21, Part 11). */
+private fun sectionV0180a(root: String) {
+println("== v0.18.0a: bedrock — Version.kt, SaveStore seam, purity wall, docs split ==")
+run {
+    val srcDir = File(root, "src/com/hunt3r/southparktown")
+    val srcFiles = srcDir.listFiles { f -> f.extension == "kt" }
+        ?.sortedBy { it.name } ?: emptyList()
+
+    // ---------- (b) version identity (D7) ----------
+    val manifest = File(root, "AndroidManifest.xml").readText()
+    check(manifest.contains("android:versionCode=\"${Version.VERSION_CODE}\"") &&
+        manifest.contains("android:versionName=\"${Version.VERSION_NAME}\""),
+        "v0.18.0a version: the manifest renders Version.kt exactly " +
+            "(code ${Version.VERSION_CODE}, name ${Version.VERSION_NAME})")
+    val versionSrc = File(srcDir, "Version.kt").readText()
+    check(versionSrc.contains("const val VERSION_CODE: Int = 127") &&
+        versionSrc.contains("const val VERSION_NAME: String = \"0.18.0a\""),
+        "v0.18.0a version: Version.kt carries this build's identity (127 / 0.18.0a)")
+    val buildSrc = File(root, "build_apk.sh").readText()
+    check(buildSrc.contains("Version.kt") &&
+        !buildSrc.contains(":-0.1.0}") && !buildSrc.contains(":-1}"),
+        "v0.18.0a version: build_apk.sh derives both values from Version.kt — " +
+            "no typed version defaults remain")
+
+    // ---------- (a) the purity wall (C1, corrected) ----------
+    // The allowlist is derived from the tree's real platform files:
+    // the eleven Activities; the hosts/views GameView, DialogueSheet,
+    // UiKit, MinigameViews, PhotoView, PocketPalArt; and the platform
+    // seams Sound, LoreLoad, AndroidSaveStore. android.graphics.* is
+    // the drawing vocabulary and is allowed in ANY file.
+    val allowlist = setOf(
+        "CollectionActivity.kt", "CreatorActivity.kt", "FictionActivity.kt",
+        "GameActivity.kt", "InventoryActivity.kt", "JournalActivity.kt",
+        "LoreActivity.kt", "MainActivity.kt", "PhoneActivity.kt",
+        "QuestActivity.kt", "SettingsActivity.kt",
+        "GameView.kt", "DialogueSheet.kt", "UiKit.kt", "MinigameViews.kt",
+        "PhotoView.kt", "PocketPalArt.kt",
+        "Sound.kt", "LoreLoad.kt", "AndroidSaveStore.kt")
+    check(srcFiles.size == 137,
+        "v0.18.0a purity: the tree stands at 137 Kotlin files (saw ${srcFiles.size})")
+    val fqPat = Regex("android\\.(app|content|os|view|widget|media|util|text|net|provider)\\.")
+    fun codeOnly(text: String): String {
+        val noBlock = text.replace(
+            Regex("/\\*.*?\\*/", RegexOption.DOT_MATCHES_ALL), " ")
+        val noStrings = noBlock.replace(
+            Regex("\"(?:\\\\.|[^\"\\\\])*\""), "\"\"")
+        return noStrings.lines().joinToString("\n") { it.substringBefore("//") }
+    }
+    for (f in srcFiles) {
+        val code = codeOnly(f.readText())
+        val nonGraphicsImports = code.lines()
+            .map { it.trimStart() }
+            .filter { it.startsWith("import android.") &&
+                !it.startsWith("import android.graphics.") }
+        val fqHits = fqPat.findAll(code.lines()
+            .filter { !it.trimStart().startsWith("import ") }
+            .joinToString("\n")).map { it.value }.toList()
+        if (f.name == "Paper.kt") {
+            check(nonGraphicsImports.all {
+                    it.startsWith("import android.content.res.Resources") } &&
+                fqHits.isEmpty(),
+                "v0.18.0a purity: Paper.kt keeps its one named exception " +
+                    "(android.content.res.Resources) and nothing else " +
+                    "non-graphics (saw $nonGraphicsImports / $fqHits)")
+        } else {
+            check((nonGraphicsImports.isEmpty() && fqHits.isEmpty()) ||
+                f.name in allowlist,
+                "v0.18.0a purity: ${f.name} touches the platform outside " +
+                    "the allowlist (imports $nonGraphicsImports, refs $fqHits)")
+        }
+    }
+    val prefsSrc = File(srcDir, "Prefs.kt").readText()
+    check(!prefsSrc.contains("SharedPreferences") &&
+        !prefsSrc.contains("import android"),
+        "v0.18.0a purity: Prefs.kt sits OFF the wall — no platform " +
+            "import, no SharedPreferences text")
+
+    // ---------- (c) the SaveStore seam (Part 3.6) ----------
+    val saveStoreSrc = File(srcDir, "SaveStore.kt").readText()
+    check(saveStoreSrc.contains("interface SaveStore") &&
+        saveStoreSrc.contains("fun read(key: String): String?") &&
+        saveStoreSrc.contains("fun write(key: String, value: String)") &&
+        saveStoreSrc.contains("fun delete(key: String)") &&
+        saveStoreSrc.contains("fun clear()") &&
+        !saveStoreSrc.contains("import android"),
+        "v0.18.0a seam: SaveStore.kt declares the four-op string " +
+            "interface with no platform import")
+    check(srcFiles.count { it.readText().contains("getSharedPreferences") } == 1 &&
+        File(srcDir, "AndroidSaveStore.kt").readText()
+            .contains("getSharedPreferences(\"sptown\""),
+        "v0.18.0a seam: AndroidSaveStore.kt is the only src file " +
+            "naming getSharedPreferences, over the sptown store")
+    check(File(root, "tools/mirror/FileSaveStore.kt").readText()
+            .contains("class FileSaveStore"),
+        "v0.18.0a seam: the mirror's FileSaveStore stands in tools/mirror")
+
+    class FakeStore : SaveStore {
+        val map = mutableMapOf<String, String>()
+        override fun read(key: String): String? = map[key]
+        override fun write(key: String, value: String) { map[key] = value }
+        override fun delete(key: String) { map.remove(key) }
+        override fun clear() { map.clear() }
+    }
+    // the pre-split fixture round-trip: a veteran game_state doc
+    // produced by the v0.17.0b codec (before the split), loaded
+    // whole through the NEW Prefs over a fake store, re-encoded
+    // byte-identically
+    val fixtureFile = File(root, "../.tmp-v0180a/pre-split-save-fixture.txt")
+    check(fixtureFile.exists(),
+        "v0.18.0a seam: the pre-split save fixture is on disk " +
+            "(.tmp-v0180a/pre-split-save-fixture.txt)")
+    if (fixtureFile.exists()) {
+        val fixture = fixtureFile.readText()
+        val fake = FakeStore()
+        fake.write("game_state", fixture)
+        val prefs = Prefs(fake)
+        val loaded = prefs.loadGame()
+        check(loaded != null,
+            "v0.18.0a seam: the pre-split veteran save loads whole " +
+                "through the new store-backed Prefs")
+        if (loaded != null) {
+            check(loaded.timeMin == 660 && loaded.todayKey == "20261004" &&
+                loaded.absDay == 24,
+                "v0.18.0a seam: fixture clock fields load exactly " +
+                    "(timeMin ${loaded.timeMin}, key ${loaded.todayKey}, " +
+                    "absDay ${loaded.absDay})")
+            check(loaded.friendship["Stan"] == 42 &&
+                loaded.friendship["Kyle"] == 37 &&
+                "golden_compass" in loaded.collected &&
+                "rusty_spoon" in loaded.collected,
+                "v0.18.0a seam: fixture friendship and collection load exactly")
+            check(loaded.life["coins"] == 123 && loaded.followers == 11 &&
+                loaded.tacoHigh == 88 && loaded.participation == 9,
+                "v0.18.0a seam: fixture life tallies load exactly")
+            check(loaded.arcStarted && loaded.arcChapter == 2 &&
+                "lights_shopping" in loaded.mysteryClues &&
+                loaded.inventory["marble"] == 5 &&
+                loaded.questCounters["errands_done"] == 7,
+                "v0.18.0a seam: fixture arc, clues, inventory and " +
+                    "counters load exactly")
+            check(prefs.storedSaveFormat() == 3,
+                "v0.18.0a seam: the fixture reads as save format 3")
+            val reEncoded = Json.stringify(encodeGameState(loaded))
+            check(reEncoded == fixture,
+                "v0.18.0a seam: the loaded save re-encodes " +
+                    "byte-identically (${reEncoded.length} vs " +
+                    "${fixture.length} chars)")
+        }
+    }
+    // Prefs public API smoke over the fake store
+    val fake2 = FakeStore()
+    val p2 = Prefs(fake2)
+    p2.savePlayer("Tester", DEFAULT_APPEARANCE)
+    check(p2.getPlayerName() == "Tester" && p2.hasPlayer(),
+        "v0.18.0a seam: player name round-trips through the fake store")
+    check(p2.getAppearance()["skin"] == DEFAULT_APPEARANCE["skin"] &&
+        p2.getAppearance().size == DEFAULT_APPEARANCE.size,
+        "v0.18.0a seam: player appearance round-trips through the fake store")
+    p2.setRealtimeSync(true)
+    check(p2.isRealtimeSync(),
+        "v0.18.0a seam: boolean keys round-trip as strings")
+    p2.setAudioSettings(AudioSettings(10, 20, 30, true))
+    val audio = p2.audioSettings()
+    check(audio.music == 10 && audio.sfx == 20 && audio.ambience == 30 &&
+        audio.muted,
+        "v0.18.0a seam: int and boolean audio keys round-trip as strings")
+    p2.setBarksEnabled(false)
+    check(!p2.barksEnabled(),
+        "v0.18.0a seam: the barks toggle round-trips")
+    p2.wipeAll()
+    check(p2.getPlayerName() == null && fake2.map.isEmpty(),
+        "v0.18.0a seam: wipeAll clears the store whole")
+
+    // ---------- (d) the docs split (D21) ----------
+    val readmeLines = File(root, "README.md").readLines().size
+    check(readmeLines < 400,
+        "v0.18.0a docs: README is slim ($readmeLines lines < 400)")
+    val changelogDoc = File(root, "docs/CHANGELOG.md").readText()
+    val tuningDoc = File(root, "docs/TUNING.md").readText()
+    val archDoc = File(root, "docs/ARCHITECTURE.md").readText()
+    val invariantsDoc = File(root, "docs/INVARIANTS.md").readText()
+    val loreDoc = File(root, "docs/LORE.md").readText()
+    val bibleDoc = File(root, "docs/CHARACTER_BIBLE.md").readText()
+    check(changelogDoc.length > 100_000 && tuningDoc.length > 10_000 &&
+        archDoc.length > 10_000 && invariantsDoc.length > 1_000 &&
+        loreDoc.length > 500 && bibleDoc.length > 10_000,
+        "v0.18.0a docs: CHANGELOG, TUNING, ARCHITECTURE, INVARIANTS, " +
+            "LORE and CHARACTER_BIBLE all exist and are non-trivial")
+    check((1..12).all { invariantsDoc.contains("C$it.") },
+        "v0.18.0a docs: INVARIANTS.md names C1..C12")
+    check(changelogDoc.contains("## Status — v0.18.0a") &&
+        changelogDoc.contains("## Status — v0.17.0b") &&
+        changelogDoc.contains(
+            "PHASE 0.5 — THE PLAYTEST FIX BUILD (versionCode 126)"),
+        "v0.18.0a docs: CHANGELOG carries the new status first and " +
+            "the v0.17.0b status text whole (moved, not lost)")
+    check(tuningDoc.contains(
+            "## Tuning ledger — set on paper, awaiting a device"),
+        "v0.18.0a docs: TUNING carries the tuning ledger header line")
+    check(loreDoc.contains("acff1c04e84dfd583dbc5b2e20ed50b5"),
+        "v0.18.0a docs: LORE pins the lorebook md5")
+}
 }
