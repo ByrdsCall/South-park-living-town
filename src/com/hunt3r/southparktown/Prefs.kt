@@ -4,7 +4,10 @@ package com.hunt3r.southparktown
 // Prefs — the save codec over SaveStore (the Android store is
 // the "sptown" preferences file; see AndroidSaveStore).
 // Hand-rolled tiny JSON (no Gson). Keys are stable — do not
-// rename.
+// rename. Every key is declared in SaveKeys.kt (the Phase 3
+// registry): store keys are referenced by const below, and the
+// game_state doc keys are pinned against the registry by the
+// suite in both directions.
 // ============================================================
 
 /** Minimal JSON writer/parser: maps, lists, strings, numbers, booleans, null. */
@@ -175,16 +178,16 @@ class Prefs(private val store: SaveStore) {
     private fun removeKey(key: String) = store.delete(key)
 
     // ---- stable keys ----
-    fun getPlayerName(): String? = getString("player_name")
+    fun getPlayerName(): String? = getString(SaveKeys.PLAYER_NAME)
     fun hasPlayer(): Boolean = getPlayerName() != null
 
     fun savePlayer(name: String, appearance: Map<String, String>) {
-        putString("player_name", name)
-        putString("player_appearance", Json.stringify(appearance))
+        putString(SaveKeys.PLAYER_NAME, name)
+        putString(SaveKeys.PLAYER_APPEARANCE, Json.stringify(appearance))
     }
 
     fun getAppearance(): Map<String, String> {
-        val raw = getString("player_appearance") ?: return DEFAULT_APPEARANCE
+        val raw = getString(SaveKeys.PLAYER_APPEARANCE) ?: return DEFAULT_APPEARANCE
         return try {
             val m = Json.parse(raw) as? Map<String, Any?> ?: return DEFAULT_APPEARANCE
             validateAppearance(m.mapValues { it.value.toString() })
@@ -195,46 +198,46 @@ class Prefs(private val store: SaveStore) {
 
     // ---- creator preset slots (v0.1.9d, additive key) ----
     fun getCreatorPresets(): List<Map<String, String>?> =
-        decodePresets(getString("creator_presets"))
+        decodePresets(getString(SaveKeys.CREATOR_PRESETS))
 
     fun saveCreatorPreset(slot: Int, appearance: Map<String, String>) {
         if (slot !in 0 until CREATOR_PRESET_SLOTS) return
         val cur = getCreatorPresets().toMutableList()
         cur[slot] = validateAppearance(appearance)
-        putString("creator_presets", encodePresets(cur))
+        putString(SaveKeys.CREATOR_PRESETS, encodePresets(cur))
     }
 
     // Never logged. Ever.
-    fun getGeminiKey(): String = getString("gemini_key", "")
+    fun getGeminiKey(): String = getString(SaveKeys.GEMINI_KEY, "")
     fun setGeminiKey(k: String) {
-        putString("gemini_key", k.trim())
+        putString(SaveKeys.GEMINI_KEY, k.trim())
     }
 
     // ---- LLM provider selection + per-provider models (stable keys — do not rename) ----
-    fun getLlmProvider(): String = getString("llm_provider", "gemini")
+    fun getLlmProvider(): String = getString(SaveKeys.LLM_PROVIDER, "gemini")
     fun setLlmProvider(p: String) {
         val v = if (p == "openrouter") "openrouter" else "gemini"
-        putString("llm_provider", v)
+        putString(SaveKeys.LLM_PROVIDER, v)
     }
 
     fun getGeminiModel(): String =
-        getString("gemini_model", LlmClient.DEFAULT_GEMINI_MODEL)
+        getString(SaveKeys.GEMINI_MODEL, LlmClient.DEFAULT_GEMINI_MODEL)
     fun setGeminiModel(m: String) {
         val v = m.trim().ifBlank { LlmClient.DEFAULT_GEMINI_MODEL }
-        putString("gemini_model", v)
+        putString(SaveKeys.GEMINI_MODEL, v)
     }
 
     // Never logged. Ever.
-    fun getOpenRouterKey(): String = getString("openrouter_key", "")
+    fun getOpenRouterKey(): String = getString(SaveKeys.OPENROUTER_KEY, "")
     fun setOpenRouterKey(k: String) {
-        putString("openrouter_key", k.trim())
+        putString(SaveKeys.OPENROUTER_KEY, k.trim())
     }
 
     fun getOpenRouterModel(): String =
-        getString("openrouter_model", LlmClient.DEFAULT_OPENROUTER_MODEL)
+        getString(SaveKeys.OPENROUTER_MODEL, LlmClient.DEFAULT_OPENROUTER_MODEL)
     fun setOpenRouterModel(m: String) {
         val v = m.trim().ifBlank { LlmClient.DEFAULT_OPENROUTER_MODEL }
-        putString("openrouter_model", v)
+        putString(SaveKeys.OPENROUTER_MODEL, v)
     }
 
     /** Active LLM config, or null when the selected provider has no key (mock brain stays). */
@@ -251,46 +254,46 @@ class Prefs(private val store: SaveStore) {
         }
     }
 
-    fun getLastPlayedDate(): String = getString("last_played_date", "")
+    fun getLastPlayedDate(): String = getString(SaveKeys.LAST_PLAYED_DATE, "")
 
     /** Real-time clock sync. Default OFF = in-game clock (15-min ticks from 8 AM). */
-    fun isRealtimeSync(): Boolean = getBoolean("realtime_sync", false)
+    fun isRealtimeSync(): Boolean = getBoolean(SaveKeys.REALTIME_SYNC, false)
     fun setRealtimeSync(on: Boolean) {
-        putBoolean("realtime_sync", on)
+        putBoolean(SaveKeys.REALTIME_SYNC, on)
     }
 
     // ---- v0.2.0b audio (additive keys — absent in old saves,
     // defaults = ON at modest volume; the sounds themselves are
     // synthesized at runtime, nothing ships in the APK) ----
     fun audioSettings(): AudioSettings = AudioSettings(
-        music = getInt("audio_music", AudioSettings.DEFAULT.music),
-        sfx = getInt("audio_sfx", AudioSettings.DEFAULT.sfx),
-        ambience = getInt("audio_amb", AudioSettings.DEFAULT.ambience),
-        muted = getBoolean("audio_muted", false)
+        music = getInt(SaveKeys.AUDIO_MUSIC, AudioSettings.DEFAULT.music),
+        sfx = getInt(SaveKeys.AUDIO_SFX, AudioSettings.DEFAULT.sfx),
+        ambience = getInt(SaveKeys.AUDIO_AMB, AudioSettings.DEFAULT.ambience),
+        muted = getBoolean(SaveKeys.AUDIO_MUTED, false)
     )
 
     fun setAudioSettings(s: AudioSettings) {
-        putInt("audio_music", s.music.coerceIn(0, 100))
-        putInt("audio_sfx", s.sfx.coerceIn(0, 100))
-        putInt("audio_amb", s.ambience.coerceIn(0, 100))
-        putBoolean("audio_muted", s.muted)
+        putInt(SaveKeys.AUDIO_MUSIC, s.music.coerceIn(0, 100))
+        putInt(SaveKeys.AUDIO_SFX, s.sfx.coerceIn(0, 100))
+        putInt(SaveKeys.AUDIO_AMB, s.ambience.coerceIn(0, 100))
+        putBoolean(SaveKeys.AUDIO_MUTED, s.muted)
     }
 
     // ---- v0.4.0e greeting barks (additive key — absent in
     // old saves, defaults ON: townsfolk hail you by voice
     // when you walk into their space) ----
-    fun barksEnabled(): Boolean = getBoolean("audio_barks", true)
+    fun barksEnabled(): Boolean = getBoolean(SaveKeys.AUDIO_BARKS, true)
     fun setBarksEnabled(on: Boolean) {
-        putBoolean("audio_barks", on)
+        putBoolean(SaveKeys.AUDIO_BARKS, on)
     }
 
     // ---- v0.16.0d diorama post pass (additive key — absent in
     // old saves, defaults ON: the seeded line "boil" of the
     // paper pipeline, a ±1px breathing of the scene's painted
     // backdrop on a 3-frame cycle; faces and UI never boil) ----
-    fun boilEnabled(): Boolean = getBoolean("post_boil", true)
+    fun boilEnabled(): Boolean = getBoolean(SaveKeys.POST_BOIL, true)
     fun setBoilEnabled(on: Boolean) {
-        putBoolean("post_boil", on)
+        putBoolean(SaveKeys.POST_BOIL, on)
     }
 
     fun saveGame(state: GameState) {
@@ -305,11 +308,11 @@ class Prefs(private val store: SaveStore) {
         // wipeAll reset it so a later save always lands.
         if (gameJson == lastGameJson) return
         lastGameJson = gameJson
-        putString("game_state", gameJson)
-        putString("friendship", Json.stringify(state.friendship))
-        putString("collected", Json.stringify(state.collected.toList()))
-        putString("last_played_date", state.lastPlayedDate)
-        putString("spawn_date", state.spawnDate)
+        putString(SaveKeys.GAME_STATE, gameJson)
+        putString(SaveKeys.FRIENDSHIP, Json.stringify(state.friendship))
+        putString(SaveKeys.COLLECTED, Json.stringify(state.collected.toList()))
+        putString(SaveKeys.LAST_PLAYED_DATE, state.lastPlayedDate)
+        putString(SaveKeys.SPAWN_DATE, state.spawnDate)
     }
 
     // ---- v0.1.5 per-NPC character memory: its OWN key, zero risk to game_state ----
@@ -318,7 +321,7 @@ class Prefs(private val store: SaveStore) {
             val json = Json.stringify(NpcMemoryStore.serialize())
             if (json == lastMemoryJson) return // v0.1.9f: unchanged, skip the write
             lastMemoryJson = json
-            putString("npc_memory", json)
+            putString(SaveKeys.NPC_MEMORY, json)
         } catch (e: Exception) {
             // memory is flavor; never break saving
         }
@@ -327,7 +330,7 @@ class Prefs(private val store: SaveStore) {
     fun loadNpcMemory() {
         if (NpcMemoryStore.isLoaded) return
         try {
-            val raw = getString("npc_memory")
+            val raw = getString(SaveKeys.NPC_MEMORY)
             if (raw == null) {
                 NpcMemoryStore.markLoaded()
                 return
@@ -342,7 +345,7 @@ class Prefs(private val store: SaveStore) {
     }
 
     fun loadGame(): GameState? {
-        val raw = getString("game_state") ?: return null
+        val raw = getString(SaveKeys.GAME_STATE) ?: return null
         val doc = try {
             Json.parse(raw) as? Map<String, Any?>
         } catch (e: Exception) {
@@ -360,16 +363,16 @@ class Prefs(private val store: SaveStore) {
         // save overwrites the surviving standalone keys — instead
         // salvage friendship / collection / dates from them.
         return recoverGameState(
-            getString("friendship"),
-            getString("collected"),
-            getString("last_played_date", ""),
-            getString("spawn_date", ""))
+            getString(SaveKeys.FRIENDSHIP),
+            getString(SaveKeys.COLLECTED),
+            getString(SaveKeys.LAST_PLAYED_DATE, ""),
+            getString(SaveKeys.SPAWN_DATE, ""))
     }
 
     fun clearGame() {
         lastGameJson = null
         lastMemoryJson = null
-        removeKey("game_state")
+        removeKey(SaveKeys.GAME_STATE)
     }
 
     fun wipeAll() {
@@ -382,7 +385,7 @@ class Prefs(private val store: SaveStore) {
      *  line): 0 = no save yet, -1 = a save exists but its doc is
      *  unreadable (it will be salvaged on load, not wiped). */
     fun storedSaveFormat(): Int {
-        val raw = getString("game_state") ?: return 0
+        val raw = getString(SaveKeys.GAME_STATE) ?: return 0
         val doc = try {
             Json.parse(raw) as? Map<String, Any?>
         } catch (e: Exception) {

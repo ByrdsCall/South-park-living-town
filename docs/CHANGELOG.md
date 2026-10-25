@@ -1,5 +1,84 @@
 # Changelog — South Park: Living Town
 
+## Status — v0.18.0e (RESTRUCTURE PHASE 3: REGISTRY — SaveKeys, the unread-key audit, the damage corpus; versionCode 131)
+
+Restructure Order Phase 3 (Part 8.1–8.2; defects D11 and D12):
+every save key now has exactly one registered owner, the
+unread-key audit is a checked-in report the suite re-pins, and
+the save loader's salvage paths and clamps — largely unexercised
+before — are covered by a fourteen-fixture damage corpus. No
+key string changed anywhere: existing saves load unchanged,
+and the Phase 0 pre-split fixture (259,114 B) still round-trips
+byte-identical. Suite: 110,638 checks / 0 failures.
+Golden gate: 155/155 against the Phase 1 baseline, unstruck.
+
+- THE REGISTRY (new src file SaveKeys.kt; src 137 → 138 Kotlin
+  files): 21 store keys (SaveKeys.STORE, one const each), 107
+  game_state doc keys (SaveKeys.DOC, in encode order), and 69
+  nested key groups by path (SaveKeys.GROUPS — 59 closed key
+  sets, 10 open groups whose keys are dynamic by design: names,
+  times, ids). Every key and group carries exactly one named
+  owner, its kind, and its cap where one applies. Prefs' 45
+  store-accessor literals were replaced by registry consts —
+  zero accessor literals remain, and the suite pins that. The
+  doc keys keep their literals inside encode/decode (one
+  writer, one reader, both in Prefs.kt) and are pinned against
+  the registry in both directions, so the registry cannot
+  silently drift from the code.
+- THE UNREAD-KEY AUDIT (docs/SAVE_KEY_AUDIT.md): all 21 store
+  keys are read and written; read-but-never-written doc keys:
+  none; saveFormat is read by inferSaveFormat rather than
+  decodeGameState itself — accounted for, not dead. The shadow
+  keys friendship / collected / spawn_date are written on every
+  save and read only on the salvage path — deliberate, they are
+  what a damaged save recovers from. THE ONE REAL FINDING:
+  gallery[].hangDay and gallery[].closeDay are WRITTEN BUT
+  NEVER READ — GalleryShow.fromMap re-derives both from the
+  season calendar. Registered with the finding, NOT removed:
+  retiring persisted keys is Phase 11 work; this phase reports.
+- THE DAMAGE CORPUS (D11; suite sectionV0180e, 14 fixtures):
+  (1) truncated doc → the town salvages from the shadow keys;
+  (2) bracket bomb → the Json parser's depth cap refuses it
+  (IllegalArgumentException, never a stack overflow) and the
+  doc salvages; (3) bad location id → agents and walk targets
+  sanitize to BusStop / none; (4) short or garbage todayKey →
+  rebuilt from the clamped date fields, a plausible key left
+  untouched; (5) NaN coordinates (as JSON literals and as raw
+  doubles) → the (0,100) fallback, short coord lists → (30,52);
+  (6) impossible month / day / minute → coerced into range;
+  (7) inflated maps → capped (events keep the last 40, errands
+  the state cap of 18, phone texts MAX_TEXTS 220; a 10,000-entry
+  life map still loads whole — caps live where the code puts
+  them, not where a test wishes); (8) hostile ids → forged
+  clue / wardrobe / card / faction / frame ids are filtered,
+  a hostile agent name loads as inert data; (9) the hostile-doc
+  cases the arc decoders already handled, pinned as templates;
+  (10) recoverGameState's per-input failure branches, exercised
+  individually; (11) wrong-typed values incl. explicit nulls →
+  field-by-field defaults, never a throw; (12) absent and blank
+  game_state → null / a default town keyed 20261001; (13)
+  garbage npc_memory → loads as no memories; (14) repair
+  idempotence: a damaged doc decodes, re-saves, and reloads
+  byte-identical. Honest limit, recorded: loadGame's
+  decode-throws catch stays defensive-only — the corpus proves
+  decode total over the fixture space, so that one branch could
+  not be triggered by any fixture; the unparseable-doc
+  fall-through IS exercised.
+- SUPERSESSIONS: four historical source pins (the audio key
+  literals, audio_barks, post_boil, and item 13's realtime_sync
+  default) now name SaveKeys.kt as the literals' home — the
+  literals moved, the pins say so at the pin. The v0.18.0d
+  section's README status pin now tracks the current build's
+  status block (README carries only the current block; the
+  0.18.0d entry lives on below in this file).
+- HARNESS FIX, surfaced by the migration: the Bedrock purity
+  wall's string stripper mispaired quotes around Kotlin char
+  literals ('"' — all over the Json parser in Prefs.kt), and
+  removing the accessor literals lengthened one mispaired span
+  to 3,147 chars, overflowing the regex stack. The stripper
+  now strips char literals first — strictly more accurate, the
+  wall's assertions unchanged.
+
 ## Status — v0.18.0d (RESTRUCTURE PHASE 2: CANONICAL — sorted measurement, set bounds, replay pins; versionCode 130)
 
 Restructure Order Phase 2 (defect D2; Part 8.3): the lifetime

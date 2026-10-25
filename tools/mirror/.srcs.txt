@@ -135,6 +135,7 @@
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/SceneArt.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/InteriorArt.kt
 /home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/Version.kt
+/home/hatch/workspace/sptown-app/src/com/hunt3r/southparktown/SaveKeys.kt
 /home/hatch/workspace/sptown-app/tools/mirror/Capture.kt
 /home/hatch/workspace/sptown-app/tools/mirror/FileSaveStore.kt
 /home/hatch/workspace/sptown-app/tools/mirror/Golden.kt
