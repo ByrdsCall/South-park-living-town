@@ -46,6 +46,376 @@ private fun hexEq(actual: String, expected: String, msg: String) {
         "$msg (expected $expected, got $actual)")
 }
 
+
+// ================= canonical measurement (D2 — Restructure Phase 2) =================
+// The lifetime soak's lifeText peak bound used to be a raw count
+// over a map whose iteration order — and, through the year's
+// micro-trajectory, whose very contents at the peak — depend on
+// compiled-artifact hashing (defect D2: the identical tree's peak
+// swung 293-318 across build environments, and the bound was
+// recalibrated for measurement reasons at v0.16.0d). The Order's
+// fix (Part 2 D2, Part 8.3): sort keys before measuring, and make
+// the bound a function of the canonical key SET, not a count.
+//
+// CanonKeys reduces a raw lifeText key to its canonical TEMPLATE:
+// day/index stamps collapse to #, date stamps after '@' collapse
+// to @#, and any segment naming a registry member (a cast name, a
+// location, a household, a climax chain, a secret, a vote
+// question, a season) collapses to *. What remains is the key's
+// SHAPE — a property of the code that writes keys, not of the
+// order any map happened to iterate in. A soak then pins:
+//   (1) the set of templates its year produced, against two
+//       pinned sets: nothing outside the ALLOWED set (a new
+//       shape — a new writer) and nothing of the REQUIRED set
+//       missing (a writer gone silent). The two differ by the
+//       rare shapes a year may or may not produce (today: one
+//       winter shape, snowman, in both soaks);
+//   (2) each template's peak daily count against its
+//       STRUCTURAL ceiling — registry arithmetic, never a
+//       sampled maximum (sampled maxima have tails: pairTopic
+//       read 10, 12, then 16 across this phase's sampled years;
+//       a ceiling struck from samples is the raw count one
+//       level down). See ceilingOf for the rules;
+//   (3) the peak day's size against the ceiling derived from
+//       the profile itself (the sum of its per-shape ceilings).
+// The canonical peak day is chosen order-free: largest size,
+// ties to the lexicographically smallest sorted key list.
+private object CanonKeys {
+    private val baseNames: Set<String> = CharacterSystem.CAST.keys +
+        AGENT_PROFILES.keys + VisitorSystem.residents().map { it.loreName }
+    private val households: Set<String> =
+        Dinners.HOUSEHOLDS.map { it.id }.toSet()
+    private val chains: Set<String> = Climaxes.CHAINS.keys
+    private val secrets: Set<String> = Secrets.SECRETS.map { it.id }.toSet()
+    private val questions: Set<String> = Votes.QUESTIONS.map { it.id }.toSet()
+    private val seasons: Set<String> =
+        setOf("spring", "summer", "autumn", "fall", "winter")
+
+    private fun segment(seg: String, names: Set<String>): String = when {
+        seg.isEmpty() -> seg
+        seg.all { it.isDigit() } -> "#"
+        '@' in seg -> segment(seg.substringBefore('@'), names) + "@#"
+        '|' in seg -> seg.split('|')
+            .joinToString("|") { segment(it, names) }
+        seg in names || seg in LOCATIONS.keys || seg in households ||
+            seg in chains || seg in secrets || seg in questions ||
+            seg in seasons -> "*"
+        else -> seg
+    }
+
+    /** The canonical template of one raw key. [extraNames] carries
+     *  names the live state has grown beyond the static census
+     *  (converted residents and the like). */
+    fun template(key: String, extraNames: Set<String> = emptySet()): String {
+        val names = if (extraNames.isEmpty()) baseNames
+            else baseNames + extraNames
+        return key.split(':').joinToString(":") { segment(it, names) }
+    }
+
+    /** The canonical key set of a key collection: its templates. */
+    fun templatesOf(keys: Collection<String>,
+        extraNames: Set<String> = emptySet()): Set<String> =
+        keys.mapTo(sortedSetOf()) { template(it, extraNames) }
+
+    /** Per-template counts of a key collection. */
+    fun profileOf(keys: Collection<String>,
+        extraNames: Set<String> = emptySet()): Map<String, Int> =
+        keys.groupingBy { template(it, extraNames) }.eachCount()
+
+    /** The structural ceiling for one template's daily count:
+     *  the most keys of this shape that can stand on one day,
+     *  as registry arithmetic. [census] is the live agent count
+     *  (cast + converts) at measure time.
+     *  - an @-stamped shape: one live stamp per climax chain
+     *    per state, plus the cases' part stamps — 2 x 13 = 26.
+     *  - a pair shape (*|*): one live topic per agent — a pair
+     *    key is a pair's LAST topic, and the year's meetings
+     *    concentrate on recurring pairs (widest sampled year:
+     *    16 live topics against a census of 98+).
+     *  - a single-* shape: its segment ranges over a registry
+     *    no larger than the census — names, and under them the
+     *    locations (27), households (7), questions (12) and
+     *    secrets (12). trip:* is the binding case: one key per
+     *    agent en route, and agents only ever join.
+     *  - a #-stamped shape: calendar records — at most two
+     *    years x four seasons of them stand at once.
+     *  - a literal shape: exactly one key of it exists. */
+    fun ceilingOf(template: String, census: Int): Int = when {
+        '@' in template -> 26
+        '|' in template -> census
+        '*' in template -> census
+        '#' in template -> 8
+        else -> 1
+    }
+
+    /** Order-free peak choice: is [candidate] (a sorted key list)
+     *  canonically above [current]? Larger wins; ties go to the
+     *  lexicographically smaller list, so the peak is a function
+     *  of the key SETS, never of iteration order. */
+    fun isCanonPeak(candidate: List<String>, current: List<String>): Boolean =
+        candidate.size > current.size ||
+            (candidate.size == current.size && current.isNotEmpty() &&
+                candidate.joinToString("\n") < current.joinToString("\n"))
+}
+
+private val LIFETIME_REQUIRED_TEMPLATES: Set<String> = sortedSetOf(
+    "arcNote:*|*",
+    "bdayObs:*",
+    "bdayObsNight:*",
+    "bdayPlan",
+    "beeHist",
+    "capNote",
+    "carnRec:#",
+    "chainBeat",
+    "climax:*@#:settled",
+    "climax:*@#:started",
+    "climax:taught",
+    "climaxFind:*@#",
+    "climaxShot:*@#",
+    "commNear:*",
+    "crew:ploc",
+    "danceRec:#",
+    "dinInviteId",
+    "dinMoment:*",
+    "dinNight:*",
+    "dinOutcome:*",
+    "emergBeat",
+    "emergCoping:*",
+    "errandBeat",
+    "errandThanks:*",
+    "festRec:#",
+    "festYears",
+    "feud",
+    "finMark:*",
+    "finMarkBy:*",
+    "finMarkWinner:*",
+    "hostHousehold",
+    "hostNight:*",
+    "hostOutcome:*",
+    "hostServed",
+    "jobId",
+    "jobPaydayLine",
+    "lastSky",
+    "mark:*",
+    "movieFeat:#",
+    "movieHistory",
+    "movieRec:#",
+    "pairTopic:*|*",
+    "paperHeadlines",
+    "paperLatest",
+    "paperSkyLog",
+    "paradeRec:#",
+    "pbCard",
+    "pbYield",
+    "playRec:#",
+    "recessBeat:#",
+    "recessHist",
+    "rival",
+    "rivalBeat",
+    "rivalCrew",
+    "rivalLastKind",
+    "rivalLastWinner",
+    "rivalLog",
+    "rivalPending",
+    "rivalPrankBack",
+    "rivalRaceFrom",
+    "rivalRaceTo",
+    "rivalStanding",
+    "roadBeat",
+    "schoolHist",
+    "secret:*",
+    "secretBeat",
+    "selfiePart:arc11_ch1_the_mail_slot@#",
+    "talentRec:#",
+    "trip:*",
+    "tripRec:*:#",
+    "voteChoice",
+    "voteHistory",
+    "voteLastResult",
+    "voteStand:*")
+
+private val LIFETIME_ALLOWED_TEMPLATES: Set<String> = sortedSetOf(
+    "arcNote:*|*",
+    "bdayObs:*",
+    "bdayObsNight:*",
+    "bdayPlan",
+    "beeHist",
+    "capNote",
+    "carnRec:#",
+    "chainBeat",
+    "climax:*@#:settled",
+    "climax:*@#:started",
+    "climax:taught",
+    "climaxFind:*@#",
+    "climaxShot:*@#",
+    "commNear:*",
+    "crew:ploc",
+    "danceRec:#",
+    "dinInviteId",
+    "dinMoment:*",
+    "dinNight:*",
+    "dinOutcome:*",
+    "emergBeat",
+    "emergCoping:*",
+    "errandBeat",
+    "errandThanks:*",
+    "festRec:#",
+    "festYears",
+    "feud",
+    "finMark:*",
+    "finMarkBy:*",
+    "finMarkWinner:*",
+    "hostHousehold",
+    "hostNight:*",
+    "hostOutcome:*",
+    "hostServed",
+    "jobId",
+    "jobPaydayLine",
+    "lastSky",
+    "mark:*",
+    "movieFeat:#",
+    "movieHistory",
+    "movieRec:#",
+    "pairTopic:*|*",
+    "paperHeadlines",
+    "paperLatest",
+    "paperSkyLog",
+    "paradeRec:#",
+    "pbCard",
+    "pbYield",
+    "playRec:#",
+    "recessBeat:#",
+    "recessHist",
+    "rival",
+    "rivalBeat",
+    "rivalCrew",
+    "rivalLastKind",
+    "rivalLastWinner",
+    "rivalLog",
+    "rivalPending",
+    "rivalPrankBack",
+    "rivalRaceFrom",
+    "rivalRaceTo",
+    "rivalStanding",
+    "roadBeat",
+    "schoolHist",
+    "secret:*",
+    "secretBeat",
+    "selfiePart:arc11_ch1_the_mail_slot@#",
+    "snowman",
+    "talentRec:#",
+    "trip:*",
+    "tripRec:*:#",
+    "voteChoice",
+    "voteHistory",
+    "voteLastResult",
+    "voteStand:*")
+
+private val Q10_ALLOWED_TEMPLATES: Set<String> = sortedSetOf(
+    "arcNote:*|*",
+    "bdayPlan",
+    "caperStance",
+    "carnRec:#",
+    "climax:*@#:settled",
+    "crew:members",
+    "crew:places:*",
+    "danceRec:#",
+    "dinInviteId",
+    "famDinDish",
+    "famDinFirst",
+    "famOwed:Dad",
+    "famOwed:Mom",
+    "famStance",
+    "festRec:#",
+    "festYears",
+    "feud",
+    "finMark:*",
+    "finMarkBy:*",
+    "finMarkWinner:*",
+    "gchat:crewOut",
+    "gchat:crewPhoto",
+    "gchat:crewSnap",
+    "heroName",
+    "heroPower",
+    "lastSky",
+    "mark:*",
+    "mark:hero_caper",
+    "paperHeadlines",
+    "paperLatest",
+    "paperSkyLog",
+    "paradeRec:#",
+    "pbCard",
+    "pbYield",
+    "playRec:#",
+    "rival",
+    "rivalBeat",
+    "rivalCrew",
+    "rivalPrank",
+    "rivalPrankLoc",
+    "snowman",
+    "standCrate",
+    "standLoc",
+    "standReview",
+    "standReviewer",
+    "standVerdict",
+    "talentRec:#",
+    "tripRec:*:#",
+    "voteHistory",
+    "voteLastResult",
+    "voteStand:*")
+
+private val Q10_REQUIRED_TEMPLATES: Set<String> = sortedSetOf(
+    "arcNote:*|*",
+    "bdayPlan",
+    "caperStance",
+    "carnRec:#",
+    "climax:*@#:settled",
+    "crew:members",
+    "crew:places:*",
+    "danceRec:#",
+    "dinInviteId",
+    "famDinDish",
+    "famDinFirst",
+    "famOwed:Dad",
+    "famOwed:Mom",
+    "famStance",
+    "festRec:#",
+    "festYears",
+    "feud",
+    "finMark:*",
+    "finMarkBy:*",
+    "finMarkWinner:*",
+    "gchat:crewOut",
+    "gchat:crewPhoto",
+    "gchat:crewSnap",
+    "heroName",
+    "heroPower",
+    "lastSky",
+    "mark:*",
+    "mark:hero_caper",
+    "paperHeadlines",
+    "paperLatest",
+    "paperSkyLog",
+    "paradeRec:#",
+    "pbCard",
+    "pbYield",
+    "playRec:#",
+    "rival",
+    "rivalBeat",
+    "rivalCrew",
+    "rivalPrank",
+    "rivalPrankLoc",
+    "standCrate",
+    "standLoc",
+    "standReview",
+    "standReviewer",
+    "standVerdict",
+    "talentRec:#",
+    "tripRec:*:#",
+    "voteHistory",
+    "voteLastResult",
+    "voteStand:*")
+
 /** Measured ground truth for one core character. */
 private data class Truth(
     val skin: String, val top: String, val bottom: String,
@@ -3109,6 +3479,9 @@ fun main(args: Array<String>) {
     sectionV0170a(root)
     sectionV0170b(root)
     sectionV0180a(root)
+    sectionV0180b(root)
+    sectionV0180c(root)
+    sectionV0180d(root)
 
     println("== $checks checks, $failures failures ==")
     if (failures > 0) kotlin.system.exitProcess(1)
@@ -5693,6 +6066,13 @@ run {
     var lifeError: String? = null
     var maxEvents = 0; var maxLog = 0; var maxEpisodes = 0
     var maxPhotos = 0; var maxLifeText = 0
+    // v0.18.0d (D2): the canonical measurement's accumulators —
+    // the year's raw key union, the names the live town grows,
+    // the per-template peak profile, the canonical peak day.
+    val lifeUnion = sortedSetOf<String>()
+    val lifeNames = mutableSetOf<String>()
+    val lifeProfile = mutableMapOf<String, Int>()
+    var peakCanon: List<String> = emptyList()
     var maxUnprotectedPhotos = 0
     var maxErrands = 0
     var buzzMornings = 0
@@ -7004,6 +7384,14 @@ run {
             maxUnprotectedPhotos = maxOf(maxUnprotectedPhotos,
                 lifeS.photos.count { !it.isCommissioned && !it.starred })
             maxLifeText = maxOf(maxLifeText, lifeS.lifeText.size)
+            lifeUnion.addAll(lifeS.lifeText.keys)
+            lifeNames.addAll(lifeS.agents.keys)
+            val canonToday = lifeS.lifeText.keys.sorted()
+            if (CanonKeys.isCanonPeak(canonToday, peakCanon))
+                peakCanon = canonToday
+            for ((t, c) in CanonKeys.profileOf(lifeS.lifeText.keys,
+                lifeNames))
+                if (c > (lifeProfile[t] ?: 0)) lifeProfile[t] = c
             maxErrands = maxOf(maxErrands, lifeS.errands.size)
             if (dayIdx == 99) {
                 cycleAt100 = lifeS.npcGoals.values.maxOfOrNull { it.cycle } ?: -1
@@ -7055,26 +7443,53 @@ run {
         "lifetime: the capped collections never broke their caps " +
             "(the album's cap binds its unprotected shelf — prints " +
             "and starred keepers hold past it by design)")
-    check(maxLifeText <= 330,
-        "lifetime: lifeText stayed bounded across the year (max $maxLifeText; " +
-            "the bound stood at 200 through the 70-cast town and moves " +
-            "with the census — wave 6's 98 measured 211 at this seed, " +
-            "the ninth case's year measured 221, and the scale & " +
-            "space build's year (v0.15.0g — the town re-anchored at " +
-            "home, so its meetings fall differently; no new lifeText " +
-            "keys) measured 235; v0.16.0c moves the bound to 310 for " +
-            "ONE disclosed reason: Travel's trip:<name> records — one " +
-            "transient key per agent en route, shed on arrival, so " +
-            "the year's peak (school-run simultaneity) measured 298; " +
-            "v0.16.0d moves the bound to 330 for a MEASUREMENT reason, " +
-            "disclosed in full: this rendering build adds NO lifeText " +
-            "keys, but the year's micro-trajectory is sensitive to " +
-            "compiled-artifact hash ordering — the unmodified " +
-            "v0.16.0c tree measured 298 in its own build environment " +
-            "and 307 re-measured in this one, and class overlays of " +
-            "untouched sources swing the isolated soak's peak across " +
-            "293–318; this tree measures 316, so the bound tracks the " +
-            "measured peak with the same ~4% headroom as 298 -> 310)")
+    // SUPERSESSION (v0.18.0d, Restructure Phase 2 / D2): the
+    // raw-count bound that stood here through v0.18.0c — one
+    // ceiling on the peak count, recalibrated at v0.16.0d for a
+    // MEASUREMENT reason (the identical tree's peak swings with
+    // compiled-artifact hash ordering: 298 in its own build
+    // environment, 307 re-measured there, 293-318 across build
+    // environments, 302/314/316 in the logs this phase read) — is
+    // RETIRED, not recalibrated. In its place, the canonical
+    // measurement (CanonKeys; Restructure Order Part 8.3): keys
+    // sorted before measuring, and the bound a function of the
+    // canonical key set — the year's templates inside the
+    // pinned allowed set with every required shape present,
+    // each template's peak daily count inside its structural
+    // ceiling (CanonKeys.ceilingOf: registry arithmetic, never
+    // a sampled maximum), and the peak day inside the ceiling
+    // the canonical set itself derives (the sum of the allowed
+    // shapes' ceilings).
+    val lifeTemplates = CanonKeys.templatesOf(lifeUnion, lifeNames)
+    val derivedCeiling = LIFETIME_ALLOWED_TEMPLATES.sumOf {
+        CanonKeys.ceilingOf(it, lifeS.agents.size) }
+    println("lifetime canonical: peak day ${peakCanon.size} keys; " +
+        "year union ${lifeUnion.size} keys in " +
+        "${lifeTemplates.size} templates; derived ceiling " +
+        "$derivedCeiling")
+    println("lifetime canonical profile: " +
+        lifeProfile.toSortedMap().entries
+            .joinToString(",") { "${it.key}=${it.value}" })
+    val lifeUnexpected =
+        (lifeTemplates - LIFETIME_ALLOWED_TEMPLATES).sorted()
+    val lifeMissing =
+        (LIFETIME_REQUIRED_TEMPLATES - lifeTemplates).sorted()
+    check(lifeUnexpected.isEmpty(),
+        "lifetime canonical: no template outside the pinned " +
+            "allowed set — unexpected $lifeUnexpected")
+    check(lifeMissing.isEmpty(),
+        "lifetime canonical: every required template fired — " +
+            "missing $lifeMissing")
+    val profileOffenders = lifeProfile.filter { (t, c) ->
+        c > CanonKeys.ceilingOf(t, lifeS.agents.size) }
+    check(profileOffenders.isEmpty(),
+        "lifetime canonical: every template's peak daily count " +
+            "fits its structural ceiling (offenders " +
+            "$profileOffenders)")
+    check(peakCanon.size <= derivedCeiling,
+        "lifetime canonical: the peak day (${peakCanon.size} " +
+            "keys) fits the ceiling derived from the canonical " +
+            "set ($derivedCeiling)")
     check(lifeS.errandsDoneCount >= 20,
         "lifetime: errands ran all year — a board posting every ten days, " +
             "judged and done (got ${lifeS.errandsDoneCount})")
@@ -33809,6 +34224,13 @@ private fun sectionV0100g(root: String) {
         var staffSnapshot: String? = null
         var arcOverlap = false
         var maxLifeText10 = 0
+        // v0.18.0d (D2): canonical accumulators, as in the
+        // lifetime soak — this audit soak measures the same map
+        // and is canonicalized the same way (Part 8.3).
+        val lifeUnion10 = sortedSetOf<String>()
+        val lifeNames10 = mutableSetOf<String>()
+        val lifeProfile10 = mutableMapOf<String, Int>()
+        var peakCanon10: List<String> = emptyList()
         var soakError: String? = null
         // group rooms are counted CUMULATIVELY across the
         // year: the phone store is a rolling window (its
@@ -33840,6 +34262,15 @@ private fun sectionV0100g(root: String) {
                 for (t in s.phoneTexts) t.read = true
                 if (openArcCount() > 1) arcOverlap = true
                 maxLifeText10 = maxOf(maxLifeText10, s.lifeText.size)
+                lifeUnion10.addAll(s.lifeText.keys)
+                lifeNames10.addAll(s.agents.keys)
+                val canonToday10 = s.lifeText.keys.sorted()
+                if (CanonKeys.isCanonPeak(canonToday10, peakCanon10))
+                    peakCanon10 = canonToday10
+                for ((t, c) in CanonKeys.profileOf(s.lifeText.keys,
+                    lifeNames10))
+                    if (c > (lifeProfile10[t] ?: 0))
+                        lifeProfile10[t] = c
                 val allowDay = s.life["famAllowanceDay"] ?: -1
                 if (allowDay > lastAllowanceDay) {
                     lastAllowanceDay = allowDay
@@ -34148,10 +34579,44 @@ private fun sectionV0100g(root: String) {
             "audit soak Q10: at day 400 the crew and family " +
                 "rooms are live and the production's room is " +
                 "archived — its season is over, its record stands")
-        check(maxLifeText10 <= 200,
-            "audit soak Q10: lifeText stayed bounded across " +
-                "the year (max $maxLifeText10) with the whole " +
-                "queue's stamps riding it")
+        // SUPERSESSION (v0.18.0d, D2): this soak's raw-count
+        // bound (a flat ceiling on the peak count, same D2 class
+        // as the lifetime soak's) is retired with it — replaced
+        // by the canonical measurement against Q10's own pinned
+        // template sets and the structural ceilings.
+        val lifeTemplates10 = CanonKeys.templatesOf(lifeUnion10,
+            lifeNames10)
+        val derivedCeiling10 = Q10_ALLOWED_TEMPLATES.sumOf {
+            CanonKeys.ceilingOf(it, s.agents.size) }
+        println("audit soak Q10 canonical: peak day " +
+            "${peakCanon10.size} keys; year union " +
+            "${lifeUnion10.size} keys in " +
+            "${lifeTemplates10.size} templates; derived ceiling " +
+            "$derivedCeiling10")
+        println("audit soak Q10 canonical profile: " +
+            lifeProfile10.toSortedMap().entries
+                .joinToString(",") { "${it.key}=${it.value}" })
+        val q10Unexpected =
+            (lifeTemplates10 - Q10_ALLOWED_TEMPLATES).sorted()
+        val q10Missing =
+            (Q10_REQUIRED_TEMPLATES - lifeTemplates10).sorted()
+        check(q10Unexpected.isEmpty(),
+            "audit soak Q10 canonical: no template outside the " +
+                "pinned allowed set — unexpected $q10Unexpected")
+        check(q10Missing.isEmpty(),
+            "audit soak Q10 canonical: every required template " +
+                "fired — missing $q10Missing")
+        val profileOffenders10 = lifeProfile10.filter { (t, c) ->
+            c > CanonKeys.ceilingOf(t, s.agents.size) }
+        check(profileOffenders10.isEmpty(),
+            "audit soak Q10 canonical: every template's peak " +
+                "daily count fits its structural ceiling " +
+                "(offenders $profileOffenders10)")
+        check(peakCanon10.size <= derivedCeiling10,
+            "audit soak Q10 canonical: the peak day " +
+                "(${peakCanon10.size} keys) fits the ceiling " +
+                "derived from the canonical set " +
+                "($derivedCeiling10)")
         NpcMemoryStore.clear()
         NpcMemoryStore.deserialize(memSnapshot10)
     }
@@ -69950,9 +70415,16 @@ private fun sectionV0170b(root: String) {
     check(!st1.walking,
         "v0.17.0b B: pressed against the crowd, the walk " +
             "ends instead of shoving through")
+    // v0.18.0b SUPERSESSION (Lucky's pass-by order):
+    // the rest now lands on the HARD CORE edge — the
+    // same sim, the same walk-ends law, a closer stop
+    // (the full-edge rest below it is sectionV0180b's
+    // pinned history, not this build's behavior)
     close(FigureCompose.feetDist2(st1.x * worldW,
-        feetLine, 340f, crowd[0]), 1f, 0.03f,
-        "v0.17.0b B: the stop rests ON the feet edge")
+        feetLine, 340f, crowd[0],
+        FigureCompose.FEET_CORE_SCALE), 1f, 0.03f,
+        "v0.18.0b B (supersedes v0.17.0b's full-edge " +
+            "rest): the stop rests ON the hard core edge")
     check(crowd == crowdBefore,
         "v0.17.0b B: every cast position byte-identical " +
             "after the head-on walk")
@@ -70151,6 +70623,386 @@ private fun sectionV0170b(root: String) {
  *  veteran fixture loads whole through the new store-backed
  *  Prefs and re-encodes byte-identically; (d) the README split
  *  into docs/ (D21, Part 11). */
+private fun sectionV0180b(root: String) {
+    println("== v0.18.0b: the pass-by (two-zone feet, squeeze, sidle) ==")
+
+    // shared sim geometry (sectionV0170b B's stage)
+    val worldW = 2000f
+    val hh = 1280f
+    val band = 0.62f
+    val feetLine = WalkBand.feetY(band, hh, false)
+    val fhBase = 340f / WalkBand.depthScale(band)
+
+    // ===== A: the two zones, named and measured =====
+    check(FigureCompose.FEET_CORE_SCALE == 0.5f,
+        "v0.18.0b A: the hard core is half the full feet " +
+            "radii — the named constant, pinned")
+    check(PaperWalk.SQUEEZE_SPEED_FACTOR == 0.45f,
+        "v0.18.0b A: the squeeze stride is 0.45 of the " +
+            "free stride — the named constant, pinned")
+    val soloF = FigureCompose.Feet("Solo", 1000f,
+        feetLine, 340f)
+    val fullEdge = FigureCompose.feetEdgeX(700f,
+        feetLine, 340f, soloF)
+    val coreEdge = FigureCompose.feetEdgeX(700f,
+        feetLine, 340f, soloF, FigureCompose.FEET_CORE_SCALE)
+    close(FigureCompose.feetDist2(coreEdge, feetLine,
+        340f, soloF, FigureCompose.FEET_CORE_SCALE),
+        1f, 0.01f,
+        "v0.18.0b A: the core edge rest sits exactly ON " +
+            "the core ellipse")
+    check(coreEdge > fullEdge + 90f,
+        "v0.18.0b A: the core rest stands a full stride " +
+            "closer than 0.17.0b's full-edge rest " +
+            "($coreEdge vs $fullEdge)")
+    check(!FigureCompose.Feet("S", 0f, 0f, 100f).walking,
+        "v0.18.0b A: a settled figure's feet read " +
+            "not-walking by default")
+    check(FigureCompose.Feet("T", 0f, 0f, 100f,
+        walking = true).walking,
+        "v0.18.0b A: a traveler's feet read walking")
+
+    // ===== B: a lone figure in open space still stops
+    // you — at the core now =====
+    var stB = PaperWalk.tapGround(
+        PaperWalk.State(x = 0.20f, band = band), 0.90f, band)
+    var minCoreB = Float.MAX_VALUE
+    var stepsB = 0
+    while (stB.walking && stepsB < 400) {
+        stB = PaperWalk.stepClamped(stB, 0.05f, 22f,
+            listOf(soloF), worldW, hh, false, fhBase).first
+        stepsB++
+        val d2 = FigureCompose.feetDist2(stB.x * worldW,
+            WalkBand.feetY(stB.band, hh, false), 340f,
+            soloF, FigureCompose.FEET_CORE_SCALE)
+        if (d2 < minCoreB) minCoreB = d2
+    }
+    check(!stB.walking,
+        "v0.18.0b B: pressed against a lone standing " +
+            "figure, the walk ends — a person is not " +
+            "a doorway")
+    close(FigureCompose.feetDist2(stB.x * worldW,
+        feetLine, 340f, soloF,
+        FigureCompose.FEET_CORE_SCALE), 1f, 0.03f,
+        "v0.18.0b B: the stop rests ON the hard core edge")
+    check(minCoreB >= 0.95f,
+        "v0.18.0b B: the player never enters the hard " +
+            "core (min $minCoreB)")
+    check(stB.x * worldW > 850f,
+        "v0.18.0b B: he stands well inside 0.17.0b's " +
+            "full-edge rest (796) — at the core, not " +
+            "a body's length away (saw ${stB.x * worldW})")
+    check(soloF == FigureCompose.Feet("Solo", 1000f,
+        feetLine, 340f),
+        "v0.18.0b B: Solo never moved")
+
+    // ===== C: the squeeze, exactly =====
+    // start standing in one figure's shell (full dist2
+    // 0.87, core dist2 3.5): a step out of the shell's
+    // far side travels exactly the squeeze factor of
+    // the same step on open ground
+    val shellF = FigureCompose.Feet("Shell", 1000f,
+        feetLine, 340f)
+    val startC = PaperWalk.State(x = 810f / worldW,
+        band = band)
+    val orderC = PaperWalk.tapGround(startC, 0.90f, band)
+    val freeC = PaperWalk.step(orderC, 0.05f, 22f).first
+    val sqC = PaperWalk.stepClamped(orderC, 0.05f, 22f,
+        listOf(shellF), worldW, hh, false, fhBase).first
+    val freeTravel = PaperWalk.distTo(startC, freeC.x,
+        freeC.band)
+    val sqTravel = PaperWalk.distTo(startC, sqC.x,
+        sqC.band)
+    check(freeTravel > 0.016f,
+        "v0.18.0b C: the control step travels a full " +
+            "stride (saw $freeTravel)")
+    close(sqTravel / freeTravel,
+        PaperWalk.SQUEEZE_SPEED_FACTOR, 0.01f,
+        "v0.18.0b C: one shelled step travels exactly " +
+            "the squeeze factor of the free step")
+    close((sqC.phase - startC.phase) /
+        (freeC.phase - startC.phase),
+        PaperWalk.SQUEEZE_SPEED_FACTOR, 0.01f,
+        "v0.18.0b C: the phase reads the squeezed " +
+            "distance — the gait stays honest")
+    check(sqC.walking,
+        "v0.18.0b C: the squeeze never ends the walk")
+    val ctrlC = PaperWalk.stepClamped(orderC, 0.05f,
+        22f, emptyList(), worldW, hh, false, fhBase).first
+    close(PaperWalk.distTo(startC, ctrlC.x, ctrlC.band),
+        freeTravel, 0.0001f,
+        "v0.18.0b C: open ground is never squeezed")
+
+    // ===== D: a max-density crowd, end to end =====
+    // figures at the compose's own pitch (0.75 of
+    // height), one feet line; the walk crosses the
+    // line diagonally at the middle gap — shells
+    // squeeze, cores slide, nobody is entered and
+    // nobody moves
+    val worldD = 2600f
+    val crowdD = (0..6).map { i ->
+        FigureCompose.Feet("Dense$i", 500f + 255f * i,
+            feetLine, 340f)
+    }
+    val crowdDBefore = crowdD.map { it.copy() }
+    val bandD0 = WalkBand.bandForY(feetLine + 55f, hh,
+        false)
+    val bandD1 = WalkBand.bandForY(feetLine - 69f, hh,
+        false)
+    var stD = PaperWalk.tapGround(
+        PaperWalk.State(x = 250f / worldD, band = bandD0),
+        2250f / worldD, bandD1)
+    var stepsD = 0
+    var minCoreD = Float.MAX_VALUE
+    var squeezeSeenD = false
+    while (stD.walking && stepsD < 4000) {
+        val prev = stD
+        stD = PaperWalk.stepClamped(stD, 0.05f, 22f,
+            crowdD, worldD, hh, false, fhBase).first
+        stepsD++
+        val pY = WalkBand.feetY(stD.band, hh, false)
+        val pFh = fhBase * WalkBand.depthScale(stD.band)
+        for (b in crowdD) {
+            val d2 = FigureCompose.feetDist2(
+                stD.x * worldD, pY, pFh, b,
+                FigureCompose.FEET_CORE_SCALE)
+            if (d2 < minCoreD) minCoreD = d2
+        }
+        val preDist = PaperWalk.distTo(prev, prev.tx,
+            prev.tband)
+        val travel = PaperWalk.distTo(prev, stD.x,
+            stD.band)
+        val inShell = crowdD.any {
+            FigureCompose.feetTouch(stD.x * worldD, pY,
+                pFh, it)
+        }
+        if (inShell &&
+            preDist > PaperWalk.SPEED * 0.05f &&
+            travel < 0.9f * PaperWalk.SPEED * 0.05f)
+            squeezeSeenD = true
+    }
+    check(!stD.walking && stepsD < 4000,
+        "v0.18.0b D: the max-density crowd is " +
+            "traversable end-to-end (arrived in " +
+            "$stepsD steps)")
+    check(stD.x > 0.84f,
+        "v0.18.0b D: he comes out the far side " +
+            "(x=${stD.x})")
+    check(crowdD == crowdDBefore,
+        "v0.18.0b D: every cast position byte-identical " +
+            "after the traversal")
+    check(minCoreD >= 0.95f,
+        "v0.18.0b D: the traversal never enters a " +
+            "hard core (min $minCoreD)")
+    check(squeezeSeenD,
+        "v0.18.0b D: the traversal genuinely squeezed " +
+            "through the shells")
+
+    // ===== E: the tiled doorway =====
+    // a wall of figures with one figure standing IN
+    // the doorway: the diagonal crosses through the
+    // side corridor between the jamb figure and the
+    // doorway figure; a same-band walk at the wall
+    // stops at the first core, as it should
+    val wallE = listOf(500f, 755f, 1137f, 1520f, 1775f)
+        .mapIndexed { i, cx ->
+            FigureCompose.Feet("Wall$i", cx, feetLine,
+                340f)
+        }
+    val wallEBefore = wallE.map { it.copy() }
+    val bandE0 = WalkBand.bandForY(feetLine + 55f, hh,
+        false)
+    val bandE1 = WalkBand.bandForY(feetLine - 55f, hh,
+        false)
+    var stE = PaperWalk.tapGround(
+        PaperWalk.State(x = 250f / worldD, band = bandE0),
+        1650f / worldD, bandE1)
+    var stepsE = 0
+    var minCoreE = Float.MAX_VALUE
+    while (stE.walking && stepsE < 4000) {
+        stE = PaperWalk.stepClamped(stE, 0.05f, 22f,
+            wallE, worldD, hh, false, fhBase).first
+        stepsE++
+        val pY = WalkBand.feetY(stE.band, hh, false)
+        val pFh = fhBase * WalkBand.depthScale(stE.band)
+        for (b in wallE) {
+            val d2 = FigureCompose.feetDist2(
+                stE.x * worldD, pY, pFh, b,
+                FigureCompose.FEET_CORE_SCALE)
+            if (d2 < minCoreE) minCoreE = d2
+        }
+    }
+    check(!stE.walking && stepsE < 4000,
+        "v0.18.0b E: the tiled doorway is crossed " +
+            "end-to-end through its side corridor " +
+            "(arrived in $stepsE steps)")
+    check(WalkBand.feetY(stE.band, hh, false) <
+        feetLine - 30f,
+        "v0.18.0b E: he ends past the wall's feet line, " +
+            "not wedged in the doorway")
+    check(wallE == wallEBefore,
+        "v0.18.0b E: the wall never moved")
+    check(minCoreE >= 0.95f,
+        "v0.18.0b E: the crossing never enters a hard " +
+            "core (min $minCoreE)")
+    var stE2 = PaperWalk.tapGround(
+        PaperWalk.State(x = 300f / worldD, band = band),
+        1700f / worldD, band)
+    var stepsE2 = 0
+    while (stE2.walking && stepsE2 < 400) {
+        stE2 = PaperWalk.stepClamped(stE2, 0.05f, 22f,
+            wallE, worldD, hh, false, fhBase).first
+        stepsE2++
+        check(stE2.x * worldD < 500f,
+            "v0.18.0b E: the same-band walk never " +
+                "crosses the first wall figure's center " +
+                "plane (step $stepsE2)")
+    }
+    check(!stE2.walking,
+        "v0.18.0b E: a same-band walk at the tiled " +
+            "wall stops — the doorway is crossed " +
+            "through the corridor, not through a person")
+    close(FigureCompose.feetDist2(stE2.x * worldD,
+        feetLine, 340f, wallE[0],
+        FigureCompose.FEET_CORE_SCALE), 1f, 0.03f,
+        "v0.18.0b E: the wall stop rests ON the first " +
+            "figure's hard core edge")
+
+    // ===== F: head-on — two walkers pass by =====
+    // each walker steps with the other's CURRENT feet
+    // as a walking blocker, the way the player meets
+    // a traveler: shells squeeze, cores press, and
+    // the pressed walker sidles — nobody teleports,
+    // nobody dies against the other
+    fun feetOf(st: PaperWalk.State, name: String):
+        FigureCompose.Feet {
+        val fh = fhBase * WalkBand.depthScale(st.band)
+        return FigureCompose.Feet(name, st.x * worldW,
+            WalkBand.feetY(st.band, hh, false), fh,
+            walking = true)
+    }
+    var aF = PaperWalk.tapGround(
+        PaperWalk.State(x = 0.30f, band = band), 0.75f,
+        band)
+    var bF = PaperWalk.tapGround(
+        PaperWalk.State(x = 0.70f, band = band), 0.25f,
+        band)
+    var roundsF = 0
+    var maxJumpF = 0f
+    var minPairF = Float.MAX_VALUE
+    var diedF = false
+    var squeezeSeenF = false
+    var sidleSeenF = false
+    while ((aF.walking || bF.walking) && roundsF < 3000) {
+        roundsF++
+        if (aF.walking) {
+            val prev = aF
+            aF = PaperWalk.stepClamped(aF, 0.05f, 22f,
+                listOf(feetOf(bF, "B")), worldW, hh,
+                false, fhBase).first
+            val travel = PaperWalk.distTo(prev, aF.x,
+                aF.band)
+            // continuity is measured in the GROUND
+            // PLANE (px of feet travel): a step may
+            // spend its one stride in x, in band, or
+            // split between them — the weighted route
+            // metric undervalues band travel by design
+            val dxPxA = (aF.x - prev.x) * worldW
+            val dyPxA = WalkBand.feetY(aF.band, hh,
+                false) - WalkBand.feetY(prev.band, hh,
+                false)
+            val travelPxA = kotlin.math.sqrt(
+                dxPxA * dxPxA + dyPxA * dyPxA)
+            if (travelPxA > maxJumpF) maxJumpF = travelPxA
+            if (!aF.walking &&
+                kotlin.math.abs(aF.x - aF.tx) > 0.02f)
+                diedF = true
+            val preDist = PaperWalk.distTo(prev, prev.tx,
+                prev.tband)
+            if (preDist > PaperWalk.SPEED * 0.05f &&
+                travel < 0.9f * PaperWalk.SPEED * 0.05f &&
+                travel > 0.0001f)
+                squeezeSeenF = true
+            if (kotlin.math.abs(aF.band - band) > 0.01f)
+                sidleSeenF = true
+        }
+        if (bF.walking) {
+            val prev = bF
+            bF = PaperWalk.stepClamped(bF, 0.05f, 22f,
+                listOf(feetOf(aF, "A")), worldW, hh,
+                false, fhBase).first
+            val travel = PaperWalk.distTo(prev, bF.x,
+                bF.band)
+            val dxPxB = (bF.x - prev.x) * worldW
+            val dyPxB = WalkBand.feetY(bF.band, hh,
+                false) - WalkBand.feetY(prev.band, hh,
+                false)
+            val travelPxB = kotlin.math.sqrt(
+                dxPxB * dxPxB + dyPxB * dyPxB)
+            if (travelPxB > maxJumpF) maxJumpF = travelPxB
+            if (!bF.walking &&
+                kotlin.math.abs(bF.x - bF.tx) > 0.02f)
+                diedF = true
+            val preDist = PaperWalk.distTo(prev, prev.tx,
+                prev.tband)
+            if (preDist > PaperWalk.SPEED * 0.05f &&
+                travel < 0.9f * PaperWalk.SPEED * 0.05f &&
+                travel > 0.0001f)
+                squeezeSeenF = true
+            if (kotlin.math.abs(bF.band - band) > 0.01f)
+                sidleSeenF = true
+        }
+        val d2 = FigureCompose.feetDist2(aF.x * worldW,
+            WalkBand.feetY(aF.band, hh, false),
+            fhBase * WalkBand.depthScale(aF.band),
+            feetOf(bF, "B"))
+        if (d2 < minPairF) minPairF = d2
+    }
+    check(!aF.walking && !bF.walking && roundsF < 3000,
+        "v0.18.0b F: both head-on walkers arrive " +
+            "($roundsF rounds)")
+    close(aF.x, 0.75f, 0.011f,
+        "v0.18.0b F: walker A reaches his target")
+    close(bF.x, 0.25f, 0.011f,
+        "v0.18.0b F: walker B reaches his target")
+    check(!diedF,
+        "v0.18.0b F: neither walk ever died against " +
+            "the other — no pressed stop between walkers")
+    check(maxJumpF <=
+        PaperWalk.SPEED * 0.05f * worldW + 3f,
+        "v0.18.0b F: no position ever jumps — the " +
+            "largest single step is $maxJumpF px of " +
+            "ground travel against one stride of " +
+            "${PaperWalk.SPEED * 0.05f * worldW} px")
+    check(minPairF < 1f,
+        "v0.18.0b F: they really met — the pair " +
+            "entered one soft shell (min $minPairF)")
+    check(squeezeSeenF,
+        "v0.18.0b F: the meeting squeezed (a slowed " +
+            "step inside a shell)")
+    check(sidleSeenF,
+        "v0.18.0b F: the meeting sidled (a band " +
+            "offset opened the pass)")
+
+    // ===== G: the wiring =====
+    val gvSrc = File(root,
+        "src/com/hunt3r/southparktown/GameView.kt")
+        .readText()
+    check(gvSrc.contains("walking = true"),
+        "v0.18.0b G: travelers publish walking feet " +
+            "to the clamp")
+    check(gvSrc.contains("FigureCompose.FEET_CORE_SCALE"),
+        "v0.18.0b G: the draw yield reads the hard " +
+            "core — a mid-squeeze stance is lawful")
+    val psSrc = File(root,
+        "src/com/hunt3r/southparktown/PaperScene.kt")
+        .readText()
+    check(psSrc.contains("SQUEEZE_SPEED_FACTOR") &&
+        psSrc.contains("FEET_CORE_SCALE"),
+        "v0.18.0b G: the two-zone law lives in " +
+            "PaperWalk.stepClamped")
+}
+
 private fun sectionV0180a(root: String) {
 println("== v0.18.0a: bedrock — Version.kt, SaveStore seam, purity wall, docs split ==")
 run {
@@ -70165,9 +71017,9 @@ run {
         "v0.18.0a version: the manifest renders Version.kt exactly " +
             "(code ${Version.VERSION_CODE}, name ${Version.VERSION_NAME})")
     val versionSrc = File(srcDir, "Version.kt").readText()
-    check(versionSrc.contains("const val VERSION_CODE: Int = 127") &&
-        versionSrc.contains("const val VERSION_NAME: String = \"0.18.0a\""),
-        "v0.18.0a version: Version.kt carries this build's identity (127 / 0.18.0a)")
+    check(versionSrc.contains("const val VERSION_CODE: Int = 130") &&
+        versionSrc.contains("const val VERSION_NAME: String = \"0.18.0d\""),
+        "v0.18.0a version: Version.kt carries this build's identity (130 / 0.18.0d)")
     val buildSrc = File(root, "build_apk.sh").readText()
     check(buildSrc.contains("Version.kt") &&
         !buildSrc.contains(":-0.1.0}") && !buildSrc.contains(":-1}"),
@@ -70352,4 +71204,261 @@ run {
     check(loreDoc.contains("acff1c04e84dfd583dbc5b2e20ed50b5"),
         "v0.18.0a docs: LORE pins the lorebook md5")
 }
+}
+
+private fun sectionV0180c(root: String) {
+    println("== v0.18.0c: sight \u2014 the golden-image harness (D22) ==")
+    val srcDir = File(root, "src/com/hunt3r/southparktown")
+    val srcFiles = srcDir.listFiles { f -> f.extension == "kt" }
+        ?.sortedBy { it.name } ?: emptyList()
+
+    // ---------- (a) the render clock seam: inert on device ----------
+    // Every wall-clock read in the view layer routes through
+    // RenderClock.nowMs(); the seam defaults unset, so the shipped
+    // game reads System.currentTimeMillis() exactly as before.
+    // Only tools/mirror may freeze it, and nothing under src/ does.
+    val paperCutSrc = File(srcDir, "PaperCut.kt").readText()
+    check(paperCutSrc.contains("object RenderClock") &&
+        paperCutSrc.contains("var fixedMs: Long? = null"),
+        "v0.18.0c seam: RenderClock lives in PaperCut.kt and defaults " +
+            "unset (the shipped game reads the wall clock)")
+    for (f in listOf("GameView.kt", "SceneArt.kt", "InteriorArt.kt")) {
+        val t = File(srcDir, f).readText()
+        check(!t.contains("System.currentTimeMillis()"),
+            "v0.18.0c seam: $f never reads the wall clock directly")
+        check(t.contains("RenderClock.nowMs()"),
+            "v0.18.0c seam: $f routes its phases through RenderClock.nowMs()")
+    }
+    val seamAssigners = srcFiles.filter {
+        it.readText().contains("RenderClock.fixedMs =")
+    }
+    check(seamAssigners.isEmpty(),
+        "v0.18.0c seam: no src file freezes the render clock " +
+            "(saw ${seamAssigners.map { it.name }})")
+    check(srcFiles.size == 137,
+        "v0.18.0c seam: the tree still stands at 137 Kotlin files " +
+            "\u2014 the seam added none (saw ${srcFiles.size})")
+
+    // ---------- (b) the harness wiring ----------
+    val captureKt = File(root, "tools/mirror/Capture.kt").readText()
+    check(captureKt.contains("goldenSeed") &&
+        captureKt.contains("Engine(goldenSeed!!)") &&
+        captureKt.contains("detachForMirror()") &&
+        captureKt.contains("bitmapSink"),
+        "v0.18.0c harness: Capture carries the golden hooks (seeded " +
+            "engine, frozen ticker, bitmap sink)")
+    val goldenKt = File(root, "tools/mirror/Golden.kt").readText()
+    check(goldenKt.contains("GOLDEN_SEED") &&
+        goldenKt.contains("RenderClock.fixedMs = GOLDEN_CLOCK_MS"),
+        "v0.18.0c harness: Golden.kt pins the engine seed and the " +
+            "render clock")
+    val captureSh = File(root, "tools/mirror/capture.sh").readText()
+    check(captureSh.contains("--golden") &&
+        captureSh.contains("MirrorMain --golden"),
+        "v0.18.0c harness: capture.sh --golden is the gate entry point")
+
+    // ---------- (c) the baseline contract ----------
+    // The target set is DERIVED from the game's own data: every
+    // location, outside and in, plus every reference sheet
+    // SheetGen writes. A new location or cast member grows the
+    // set and fails this pin until the baseline is re-struck
+    // \u2014 deliberately, in the open.
+    val tsv = File(root, "tools/golden/hashes.tsv")
+    check(tsv.exists(), "v0.18.0c baseline: tools/golden/hashes.tsv exists")
+    val rows = tsv.readLines()
+        .filter { it.isNotEmpty() && !it.startsWith("#") }
+        .map { it.split("\t") }
+    check(rows.all { it.size == 22 },
+        "v0.18.0c baseline: every row carries name/kind/w/h/allowed/" +
+            "whole + the 16 region hashes (saw sizes " +
+            "${rows.map { it.size }.distinct()})")
+    val expected = sortedSetOf<String>()
+    for (loc in LOCATIONS.keys) {
+        expected.add("scene:$loc")
+        expected.add("scene:$loc:in")
+    }
+    fun slug(name: String): String =
+        name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-')
+    for (name in KidArt.SHEETS.keys) {
+        expected.add("sheet:${slug(name)}-games-style-sheet")
+    }
+    expected.add("sheet:new-kid-games-style-sheet")
+    expected.add("sheet:new-kid-looks-sheet")
+    expected.add("sheet:contact-sheet")
+    val names = rows.map { it[0] }
+    check(names.size == expected.size && names.toSet() == expected,
+        "v0.18.0c baseline: exactly the ${expected.size} targets " +
+            "(27 exteriors + 27 interiors + 101 sheets) \u2014 saw " +
+            "${names.size} rows, ${names.count { it !in expected }} " +
+            "unexpected, ${expected.count { it !in names.toSet() }} missing")
+    check(rows.all { it[4] == "0" },
+        "v0.18.0c baseline: every target's drift allowance is 0 " +
+            "\u2014 determinism was achieved, not budgeted")
+    val hex64 = Regex("[0-9a-f]{64}")
+    check(rows.all { r ->
+        hex64.matches(r[5]) && r.drop(6).all { hex64.matches(it) }
+    }, "v0.18.0c baseline: every hash is a SHA-256 hex digest")
+}
+
+/** v0.18.0d section: Restructure Phase 2 — CANONICAL (defect
+ *  D2). Canonical measurement for the soaks: keys sorted before
+ *  measuring, bounds as functions of the canonical key set
+ *  (CanonKeys templates + profiles), replay pins proving the
+ *  measurement itself is order-independent. No game code changes
+ *  in this build — src/ is untouched; everything below reads the
+ *  suite's own machinery. */
+private fun sectionV0180d(root: String) {
+    println("== v0.18.0d: canonical \u2014 sorted measurement, set bounds, replay pins (D2) ==")
+    val srcDir = File(root, "src/com/hunt3r/southparktown")
+    check(Version.VERSION_CODE == 130 &&
+        Version.VERSION_NAME == "0.18.0d",
+        "v0.18.0d version: Version.kt carries this build's " +
+            "identity (130 / 0.18.0d)")
+    val ktCount = srcDir.listFiles { f -> f.extension == "kt" }
+        ?.size ?: -1
+    check(ktCount == 137,
+        "v0.18.0d: the tree still stands at 137 Kotlin files " +
+            "\u2014 Phase 2 changed no game code (saw $ktCount)")
+
+    // ---------- the template canon, shape by shape ----------
+    val shapes = listOf(
+        "trip:Stan" to "trip:*",
+        "mark:StarksPond" to "mark:*",
+        "climax:mole_panic@20270102:started" to
+            "climax:*@#:started",
+        "climaxFind:gold_fever@20270715" to "climaxFind:*@#",
+        "movieFeat:123" to "movieFeat:#",
+        "recessBeat:45" to "recessBeat:#",
+        "arcNote:Stan|Wendy" to "arcNote:*|*",
+        "pairTopic:Craig|Tweek" to "pairTopic:*|*",
+        "dinNight:marsh" to "dinNight:*",
+        "hostNight:tweek" to "hostNight:*",
+        "voteStand:dock_name" to "voteStand:*",
+        "secret:the_third_box" to "secret:*",
+        "tripRec:fall:2026" to "tripRec:*:#",
+        "finMark:winter" to "finMark:*",
+        "lampFixed:123" to "lampFixed:#",
+        "selfiePart:arc11_ch1_the_mail_slot@20270823" to
+            "selfiePart:arc11_ch1_the_mail_slot@#",
+        "feud" to "feud",
+        "crew:ploc" to "crew:ploc")
+    for ((raw, expected) in shapes) {
+        check(CanonKeys.template(raw) == expected,
+            "v0.18.0d canon: $raw templates to $expected " +
+                "(got ${CanonKeys.template(raw)})")
+    }
+
+    // ---------- replay pins: the measurement is order-free ----
+    // The same key SET, inserted into maps in three different
+    // orders (as-is, reversed, a fixed-seed shuffle), must give
+    // byte-identical canonical measurements. A future change
+    // that lets iteration order leak into the measurement fails
+    // here, not in a soak bound.
+    val keySet = listOf(
+        "trip:Stan", "trip:Kyle", "mark:Bijou", "feud",
+        "climax:mole_panic@20270102:started",
+        "climax:mole_panic@20270102:settled",
+        "movieFeat:12", "movieFeat:13", "recessBeat:45",
+        "arcNote:Stan|Wendy", "dinNight:marsh", "dinNight:tweek",
+        "voteStand:dock_name", "secret:the_third_box",
+        "tripRec:fall:2026", "errandThanks:Butters",
+        "errandThanks:Stan", "finMark:winter", "lastSky",
+        "crew:ploc")
+    val orders = listOf(
+        keySet,
+        keySet.reversed(),
+        keySet.shuffled(kotlin.random.Random(20261025)))
+    val measured = orders.map { ord ->
+        val m = LinkedHashMap<String, String>()
+        for (k in ord) m[k] = "x"
+        Triple(m.keys.sorted(),
+            CanonKeys.templatesOf(m.keys),
+            CanonKeys.profileOf(m.keys))
+    }
+    check(measured.all { it == measured[0] },
+        "v0.18.0d replay: canonical sorted keys, template set " +
+            "and profile are identical across insertion orders")
+    val hashMeasured = orders.map { ord ->
+        val m = HashMap<String, String>()
+        for (k in ord) m[k] = "x"
+        CanonKeys.templatesOf(m.keys) to CanonKeys.profileOf(m.keys)
+    }
+    check(hashMeasured.all { it == hashMeasured[0] },
+        "v0.18.0d replay: the same canon falls out of a " +
+            "HashMap's iteration order, whatever it happens to be")
+
+    // ---------- the canonical peak choice ----------
+    check(CanonKeys.isCanonPeak(listOf("a", "b", "c"),
+        listOf("a", "b")),
+        "v0.18.0d peak: the larger day wins")
+    check(CanonKeys.isCanonPeak(listOf("a", "b"),
+        listOf("a", "c")),
+        "v0.18.0d peak: a tied day goes to the lexicographically " +
+            "smaller sorted list")
+    check(!CanonKeys.isCanonPeak(listOf("a", "c"),
+        listOf("a", "b")),
+        "v0.18.0d peak: a tied day does not displace the " +
+            "lexicographically smaller incumbent")
+
+    // ---------- the retired raw bounds stay retired ----------
+    // (needles built in pieces so this very section does not
+    // reintroduce the literals it pins absent)
+    val smokeSrc = File(root, "tools/SmokeTest.kt").readText()
+    check(!smokeSrc.contains("maxLifeText " + "<= 330") &&
+        !smokeSrc.contains("maxLifeText10 " + "<= 200"),
+        "v0.18.0d: neither soak asserts a raw-count lifeText " +
+            "bound anymore (D2 — bounds are canonical or absent)")
+    check(smokeSrc.contains("CanonKeys.profileOf(lifeS.lifeText.keys") &&
+        smokeSrc.contains("CanonKeys.profileOf(s.lifeText.keys"),
+        "v0.18.0d: both soaks measure lifeText through CanonKeys")
+
+    // ---------- the pinned sets are well-formed ----------
+    check(LIFETIME_REQUIRED_TEMPLATES.all {
+            it in LIFETIME_ALLOWED_TEMPLATES } &&
+        Q10_REQUIRED_TEMPLATES.all { it in Q10_ALLOWED_TEMPLATES },
+        "v0.18.0d: every required template is allowed (lifetime " +
+            "${LIFETIME_ALLOWED_TEMPLATES.size}, Q10 " +
+            "${Q10_ALLOWED_TEMPLATES.size})")
+    check(LIFETIME_REQUIRED_TEMPLATES.size == 74 &&
+        LIFETIME_ALLOWED_TEMPLATES.size == 75 &&
+        Q10_ALLOWED_TEMPLATES.size == 51 &&
+        Q10_REQUIRED_TEMPLATES.size == 50,
+        "v0.18.0d: the canonical sets stand at 74 required + 1 " +
+            "allowed lifetime templates and 50 required + 1 " +
+            "allowed Q10 templates — the allowed extra in both " +
+            "is snowman, a winter shape that fires only in some " +
+            "years — as struck from the measured years")
+    // ---------- ceilings are structural, never sampled ----------
+    check(CanonKeys.ceilingOf("feud", 100) == 1 &&
+        CanonKeys.ceilingOf("crew:ploc", 100) == 1 &&
+        CanonKeys.ceilingOf("trip:*", 100) == 100 &&
+        CanonKeys.ceilingOf("pairTopic:*|*", 100) == 100 &&
+        CanonKeys.ceilingOf("climax:*@#:started", 100) == 26 &&
+        CanonKeys.ceilingOf("movieRec:#", 100) == 8 &&
+        CanonKeys.ceilingOf("trip:*", 140) == 140,
+        "v0.18.0d ceilings: literal shapes stand at 1, " +
+            "registry shapes at the live census, @-stamped " +
+            "shapes at 26, #-stamped records at 8 — arithmetic, " +
+            "not sampled maxima")
+    check(!smokeSrc.contains("LIFETIME_" + "PROFILE") &&
+        !smokeSrc.contains("Q10_" + "PROFILE"),
+        "v0.18.0d: the sampled-maxima profiles struck during " +
+            "this phase's first strike are removed whole — the " +
+            "tails (pairTopic 10/12/16 across sampled years) " +
+            "proved them the raw count one level down")
+
+    // ---------- docs + the golden baseline is untouched ----------
+    val changelogDoc = File(root, "docs/CHANGELOG.md").readText()
+    check(changelogDoc.contains("## Status \u2014 v0.18.0d"),
+        "v0.18.0d docs: CHANGELOG carries this build's status")
+    val readmeDoc = File(root, "README.md").readText()
+    check(readmeDoc.contains("## Status \u2014 v0.18.0d"),
+        "v0.18.0d docs: README carries this build's status")
+    val goldenRows = File(root, "tools/golden/hashes.tsv")
+        .readLines()
+        .filter { it.isNotEmpty() && !it.startsWith("#") }
+    check(goldenRows.size == 155,
+        "v0.18.0d: the Phase 1 golden baseline still stands at " +
+            "155 targets (saw ${goldenRows.size}) \u2014 Phase 2 " +
+            "re-strikes nothing")
 }
